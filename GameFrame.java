@@ -2,9 +2,10 @@ package Project3_220;
 
 import javax.swing.*;
 
-public class GameFrame {
+public class GameFrame extends MyFrame{
     
-    private GameFrame(){
+    public GameFrame(){
+        System.out.println("hello");
         /*
         A) new JFrame
         B) add component in new panel
@@ -19,5 +20,9 @@ public class GameFrame {
         
         -need threads for each enemy and player's character
         */
+    }
+    @Override
+    public void Update(int num) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }

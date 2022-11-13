@@ -11,17 +11,17 @@ import javax.swing.*;
 import java.lang.Math;
 
 public final class MainApplication extends MyFrame{
-    
-    private MainApplication   CurrentFrame;
-    private UpdateFrameThread UPS;
-    private JLayeredPane      ContentPane;
     private JPanel            MenuPanel;
     
-    private MyButton     Play;
+    //private boolean Entered = false;
+    
+    private Animation     Logo;
+    private MyButton      Play;
+    private GameFrame      Game;
     private SettingButton Setting;
-    private CreditButton Credit;
-    private MyButton     Exit;
-    private JLabel[]     Background;
+    private CreditButton  Credit;
+    private MyButton      Exit;
+    private JLabel[]      Background;
     
     private MainApplication(UpdateFrameThread UPS, int frameWidth, int frameHeight){
         super("Penguin Edgerunner");
@@ -50,8 +50,11 @@ public final class MainApplication extends MyFrame{
         Play = new MyButton(){
             @Override
             public void mouseReleased(MouseEvent e) {
-                if(Entered){ //new GameFrame;
-                    //setSelected(Entered = false);
+                if(Entered){
+                    /*Game = new GameFrame();
+                    setSelected(Entered = false);
+                    CurrentFrame.setVisible(false);
+                    UPS.setFrame(Game);*/
                 }
             }
         };
@@ -69,6 +72,12 @@ public final class MainApplication extends MyFrame{
             }
         };
         Exit.set3Icon(BTPath+"ExitButton.png");
+        addWindowListener(new WindowAdapter(){
+            @Override
+            public void windowClosing(WindowEvent e) {
+                UPS.setGameOn(false);
+            }
+        });
         
         JButton[] MenuButton = {Play,Setting,Credit,Exit};
         for(JButton b: MenuButton){
@@ -87,226 +96,58 @@ public final class MainApplication extends MyFrame{
             Background[i].setIcon(new ImageIcon(img));
             Background[i].setBounds(-32, -18, 1344, 756);
         }
-        /*addMouseMotionListener(new MouseMotionAdapter(){
-            private boolean enter = false;
+        addMouseMotionListener(new MouseMotionAdapter(){
             private MouseEvent e;
-            private void update(){
+            private boolean reachTarget;
+            private Point cal(Point current, int j){
+                double numx = 8+j*4;
+                double currentx = current.x+32;
+                double targetX =  Math.ceil(e.getX()/Math.round(width/numx)) - (numx/2);
+                if(targetX>0) targetX--;
                 
-            }
-            private Point cal(int j){
-                float numx = 8+j*4;
-                int currentx = (int) Math.ceil((double) e.getX()/Math.round(width/numx));
-            }
-            private void Hold(){
-                for(int i =0,j=6; i<Background.length-1; i++,j--) Background[i].setLocation(cal(j));
-            }
-            private void Release(){
+                double numy = 6+j*2;
+                double currenty = current.y+18;
+                double targetY =  Math.ceil(e.getY()/Math.round(height/numy)) - (numy/2);
+                if(targetY>0) targetY--;
                 
+                reachTarget = Math.signum(targetX-currentx)==0 && Math.signum(targetY-currenty)==0;
+                return new Point((int) (current.x+Math.signum(targetX-currentx)), (int) (current.y+Math.signum(targetY-currenty)));
             }
             @Override
             public void mouseMoved(MouseEvent e) {
                 this.e = e;
-                if(e.getX()>=0&&e.getX()<=width && e.getY()>=0&&e.getY()<=height) enter = true;
-                else enter = false;
-                
-                /*{//Background[i].setLocation(p);
-                    for(int i =0,j=6; i<Background.length-1; i++,j--) Hold();
-                }
-                else{
-                    for(int i =0,j=6; i<Background.length-1; i++,j--) Release();
-                }
+                do{
+                    for(int i =0,j=6; i<Background.length-1; i++,j--)  Background[i].setLocation(cal(Background[i].getLocation(),j));
+                }while(!reachTarget);
             }
-        });*/
+        });
+        
+        Logo = new Animation(19, 600,157);
+        Logo.setSpriteSheet(Path.SSPath+"Penguin_Edgerunner.png", 5,4, 1978,519, Image.SCALE_FAST);
         
         
-        MenuPanel.setBounds(0, 0, width, height);
-        MenuPanel.setLayout( new FlowLayout(FlowLayout.CENTER,width,30) );
+        MenuPanel.setBounds(15, 0, width, height);
+        MenuPanel.setLayout( new FlowLayout(FlowLayout.CENTER,width,20) );
         MenuPanel.setOpaque(false);
         
+        MenuPanel.add(Logo);
         MenuPanel.add(Play);
         MenuPanel.add(Setting);
         MenuPanel.add(Credit);
         MenuPanel.add(Exit);
         ContentPane.add(MenuPanel, JLayeredPane.DRAG_LAYER);
         for(JLabel i : Background) ContentPane.add(i, JLayeredPane.DEFAULT_LAYER);
-        /*
-        A) create new panel named MenuPanel
-        B) add conpomnents in the MenuPanel
-            1 add the logo (thread)
-            2 add 4 buttons: Play, Setting, Credits, Exit(this.dispose();)
-            3 add backgrounds (MouseMoitonListener)
-        C) add event listener: 4 buttons
-        D) add MenuPanel into CententPane
-        - setMaximizedSize
-        - UpdateFrameThread focus on the frame
-        - this.setLayout(null);
-        */
     }
-    public int getwidth(){ return width; }
-    public int getheight(){ return height; }
+    
+    @Override
+    public void Update(int num) { if(num%20==0) Logo.update(); }
+    public int getwidth()       { return width; }
+    public int getheight()      { return height; }
 
     public static void main(String[] args) {
         UpdateFrameThread UPS = new UpdateFrameThread();
         MainApplication main = new MainApplication(UPS,1280,720);
         UPS.setFrame(main);
-        //UPS.start();
-    }
-    
-}
-
-/*class playLabel extends MyButton{
-    protected JFrame frame;
-    protected JPanel MenuPanel;
-    
-    private JLabel MenuPanel;
-    private String filepath;
-    private MyImageIcon[] img;
-    
-    playLabel(JFrame frame , JLabel MenuPanel , String path){
-        this.frame = frame;
-        this.filepath = path;
-        this.MenuPanel = MenuPanel;
-        
-        img = new MyImageIcon[3];
-        
-        super.setIcon(filepath+"PlayButton.png");
-        super.setBorderPainted(false);
-        super.setOpaque(false);
-        super.setContentAreaFilled(false);
-        super.setBorderPainted(false);
-        super.setFocusable(false);
-        setBounds(50, 200, 304,98);
-        setVisible(true);
-        this.MenuPanel.add(this);
-        this.setBackground(new Color(0,0,0,0));
-        this.setBorderPainted(false);
-        addMouseListener(this);
-        
-    }
-    
-    @Override
-    public void mouseReleased(MouseEvent e) { 
-    }
-    @Override
-    public void mouseClicked(MouseEvent e) { }
-    @Override
-    public void mousePressed(MouseEvent e) { 
-    }
-    @Override
-    public void mouseEntered(MouseEvent e) { 
-        this.setSelected(true);
-    }
-    @Override
-    public void mouseExited(MouseEvent e) {
-        this.setSelected(false);
+        UPS.start();
     }
 }
-
-class settingLabel extends MyButton{
-    protected JFrame frame;
-    protected JPanel MenuPanel;
-    
-    private JLabel MenuPanel;
-    private String filepath;
-    private MyImageIcon[] img;
-    
-    settingLabel(JFrame frame , JLabel MenuPanel , String path){
-        this.frame = frame;
-        this.filepath = path;
-        this.MenuPanel = MenuPanel;
-        
-        img = new MyImageIcon[3];
-        
-        super.setIcon(filepath+"SettingButton.png");
-        super.setBorderPainted(false);
-        super.setOpaque(false);
-        super.setContentAreaFilled(false);
-        super.setBorderPainted(false);
-        super.setFocusable(false);
-        setBounds(50, 300, 304,98);
-        setVisible(true);
-        this.MenuPanel.add(this);
-        this.setBackground(new Color(0,0,0,0));
-        this.setBorderPainted(false);
-        addMouseListener(this);
-        
-    }
-    
-    @Override
-    public void mouseReleased(MouseEvent e) { 
-    }
-    @Override
-    public void mouseClicked(MouseEvent e) { }
-    @Override
-    public void mousePressed(MouseEvent e) { 
-    }
-    @Override
-    public void mouseEntered(MouseEvent e) { 
-        this.setSelected(true);
-    }
-    @Override
-    public void mouseExited(MouseEvent e) {
-        this.setSelected(false);
-    }
-}
-
-class creditLabel extends MyButton{
-    protected JFrame frame;
-    protected JPanel MenuPanel;
-    
-    private JLabel MenuPanel;
-    private String filepath;
-    private MyImageIcon[] img;
-    
-    creditLabel(JFrame frame , JLabel MenuPanel , String path){
-        this.frame = frame;
-        this.filepath = path;
-        this.MenuPanel = MenuPanel;
-        
-        img = new MyImageIcon[3];
-        
-        super.setIcon(filepath+"CreditButton.png");
-        super.setBorderPainted(false);
-        super.setOpaque(false);
-        super.setContentAreaFilled(false);
-        super.setBorderPainted(false);
-        super.setFocusable(false);
-        setBounds(50, 400, 304,98);
-        setVisible(true);
-        this.MenuPanel.add(this);
-        this.setBackground(new Color(0,0,0,0));
-        this.setBorderPainted(false);
-        addMouseListener(this);
-        
-    }
-    
-    @Override
-    public void mouseReleased(MouseEvent e) { 
-    }
-    @Override
-    public void mouseClicked(MouseEvent e) { }
-    @Override
-    public void mousePressed(MouseEvent e) { 
-    }
-    @Override
-    public void mouseEntered(MouseEvent e) { 
-        this.setSelected(true);
-    }
-    @Override
-    public void mouseExited(MouseEvent e) {
-        this.setSelected(false);
-    }
-}
-
-class MyImageIcon extends ImageIcon
-{
-    public MyImageIcon(String fname)  { super(fname); }
-    public MyImageIcon(Image image)   { super(image); }
-
-    public MyImageIcon resize(int width, int height)
-    {
-	Image oldimg = this.getImage();
-	Image newimg = oldimg.getScaledInstance(width, height, java.awt.Image.SCALE_DEFAULT);
-	return new MyImageIcon(newimg);
-    }
-};*/

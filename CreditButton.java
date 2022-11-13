@@ -49,14 +49,5 @@ public class CreditButton extends MyButton{
         
         OwnPanel.add(credits);
         OwnPanel.add(BackButton);
-        /*
-        A) Remove the MenuPanel(/)
-        B) add conponent in OwnPanel
-            1 add 'CreditPage' image(/)
-            2 add a button: Back(/)
-            3 add backgrounds (thread)
-        C) add event listener: a buttons(/)
-        - re-add the MenuPanel(/)
-        */
     }
 }

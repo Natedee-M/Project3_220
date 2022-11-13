@@ -1,22 +1,23 @@
 package Project3_220;
 
-import static Project3_220.MyButton.crop;
 import java.awt.Image;
 import java.awt.event.MouseEvent;
 import javax.swing.*;
 
 public class SettingButton extends MyButton{
     public SettingButton(MainApplication Frame, JLayeredPane Content, JPanel MenuPanel){
+        /*
+        didnt do Audio things
+        */
         this.Frame = Frame;
         this.ContentPane = Content;
         this.MenuPanel = MenuPanel;
         set3Icon(BTPath + "SettingButton.png");
         OwnPanel = new JPanel();
         
-        //Texts&Pics
-        String[] path = {"SettingText.png", "SFXText.png", "BGMText.png", "Board.png"};
-        int[][] bound = {{170,0,450,100},{0,130,220,85},{0,230,220,85},{0,300,500,500}};//set bounds correctly
-        ImageIcon[] icon = importImg(ImgPath, path);
+        String[] path = {"SettingText.PNG", "SFXText.PNG", "BGMText.PNG"};//(213, 472, 304, 98)
+        int[][] bound = {{213,0,304,115},{0,177,220,85},{0,292,220,85}};//set bounds correctly
+        ImageIcon[] icon = Path.importImg(ImgPath, path);
         JLabel[] text = new JLabel[path.length];
         for(int i=0; i<path.length; i++){
             text[i] = new JLabel();
@@ -24,24 +25,30 @@ public class SettingButton extends MyButton{
             text[i].setBounds(bound[i][0], bound[i][1], bound[i][2], bound[i][3]);
         }
         
-        //Sliders
-        JSlider SFX = new JSlider(SwingConstants.HORIZONTAL);//setlocation
-        //SFX.setBounds(TOP, TOP, WIDTH, HEIGHT);
+        JSlider SFX = new JSlider(SwingConstants.HORIZONTAL);
+        SFX.setBounds(235, 214, 350, 10);
+        SFX.setOpaque(false);
         JSlider BGM = new JSlider(SwingConstants.HORIZONTAL);
+        BGM.setBounds(235, 329, 350, 10);
+        BGM.setOpaque(false);
         //SFXSlider.addChangeListener(new ChangeListener());//SFXSlider.getValue()
         
         
-        //Buttons
         class NoteButton extends MyButton{
-            private final ImageIcon[] icon = new ImageIcon[2];//Off-On
+            private final ImageIcon[] icon = new ImageIcon[4];//Off-On
             public NoteButton(){
-                ImageIcon pic = new ImageIcon(BTPath+"NoteSwitch.png");
+                //icon = new ImageIcon[4];
+                ImageIcon pic = new ImageIcon(Path.BTPath+"NoteSwitch.png");
                 Image img;
                 for(int i=0; i<2; i++){
-                    img = crop(pic.getImage(), i*105,0, 105,104);//correct the parameters
-                    icon[i] = new ImageIcon(img);
+                    for(int j=0; j<2; j++){
+                        img = Path.crop(pic.getImage(), i*103,j*102, 103,102);
+                        icon[i*2+j] = new ImageIcon(img);
+                    }
                 }
-                setIcon(icon[1]);
+                for(ImageIcon i: icon) if(i==null) System.out.println("y");
+                setIcon(icon[2]);
+                setSelectedIcon(icon[3]);
                 //make sound on
                 
                 setBorderPainted(false);
@@ -50,18 +57,25 @@ public class SettingButton extends MyButton{
             @Override
             public void mouseReleased(MouseEvent e) {
                 if(Entered){
-                    if(getIcon()==icon[0]) setIcon(icon[1]);//sound on
-                    else setIcon(icon[0]);//sound off
+                    if(getIcon()==icon[0]){
+                        setIcon(icon[2]);
+                        setSelectedIcon(icon[3]);//sound on
+                    }
+                    else{
+                        setIcon(icon[0]);
+                        setSelectedIcon(icon[1]);//sound off
+                    }
                 }
             }
         }
         MyButton SFXButton = new NoteButton();
-        SFXButton.setBounds(670, 130, 105, 104);
+        SFXButton.setBounds(600, 169, 103, 102);
         SFXButton.addMouseListener(SFXButton);
         
         MyButton BGMButton = new NoteButton();
-        BGMButton.setBounds(670, 230, 105, 104);
+        BGMButton.setBounds(600, 284, 103, 102);
         BGMButton.addMouseListener(BGMButton);
+        
         
         MyButton BackButton = new MyButton(){
             @Override
@@ -89,25 +103,14 @@ public class SettingButton extends MyButton{
         BackButton.addMouseListener(BackButton);
         
         OwnPanel.setLayout(null);
-        OwnPanel.setBounds(275, 57, 1005, Frame.getheight()-57);
+        OwnPanel.setBounds(275, 57, 703, Frame.getheight()-57);
         OwnPanel.setOpaque(false);
         
-        for(int i=0; i<path.length-1; i++) OwnPanel.add(text[i]);//Board is the last component
+        for(int i=0; i<path.length; i++) OwnPanel.add(text[i]);
         OwnPanel.add(SFXButton);
-        OwnPanel.add(BGMButton);//add 2 sliders
+        OwnPanel.add(BGMButton);
+        OwnPanel.add(SFX);
+        OwnPanel.add(BGM);
         OwnPanel.add(BackButton);
-        //OwnPanel.add(text[path.length-1]);//Board is the last component
-        
-        /*
-        A) Remove the MenuPanel(/)
-        B) add conponent in OwnPanel
-            1 add the 'Setting' logo(/)
-            2 add 3 JLabel: SFX, BGM, Board(/)
-            3 add 2 slider
-            4 add 3 buttons: on/off sound, Back(/)
-            5 add backgrounds (thread)
-        C) add event listener: 3 buttons(_,_,/), 2 sliders
-        - re-add the MenuPanel(/)
-        */
     }
 }

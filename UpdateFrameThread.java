@@ -6,34 +6,38 @@ import javax.swing.JFrame;
 public class UpdateFrameThread extends Thread{
     private final int FPS = 120;
     private final int UPS = 200;
-    private JFrame frame;
+    private MyFrame frame;
     private boolean GameOn = true;
     
-    //public UpdateFrameThread(JFrame frame)  { this.frame = frame; }
-    public void setFrame(JFrame frame)      { this.frame = frame; }
+    public void setFrame(MyFrame frame)      { this.frame = frame; }
     public void setGameOn(boolean b)        { GameOn = b; }
     
     public void run(){
         double TimePerFrame = pow(10,9)*1.0/FPS;
         double TimePerUpdate = pow(10,9)*1.0/UPS;
         long previoustime = System.nanoTime();
-        double deltaU = 0;
-        double deltaF = 0;
-        long currentTime;
+        double deltaU = 0, deltaF = 0;
+        long currentTime, lastcheck=System.currentTimeMillis(), now;
+        int update = 0;
         //long now, lastFrame=System.nanoTime();
         
         while(GameOn){
-            currentTime = System.nanoTime();//now = 
+            currentTime = System.nanoTime();
+            now = System.currentTimeMillis();
             deltaU += (currentTime - previoustime)/TimePerUpdate;
             deltaF += (currentTime - previoustime)/TimePerFrame;
             previoustime = currentTime;
             if(deltaU >= 1){
-                //update();
+                frame.Update(++update);
                 deltaU--;
             }
             if(deltaF >= 1) {
                 frame.repaint();
                 deltaF--;
+            }
+            if(now - lastcheck >= 1000){
+                lastcheck = now;
+                update =0;
             }
             /*if(now-lastFrame >= TimePerFrame){
                 //call repaint()
@@ -43,8 +47,4 @@ public class UpdateFrameThread extends Thread{
     }
     
     //public void changeFPS(int fps){ FPS = fps; }
-
-    private void update() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
 }
