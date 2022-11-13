@@ -12,7 +12,7 @@ import java.lang.Math;
 
 public final class MainApplication extends MyFrame{
     private JPanel            MenuPanel;
-    
+    private GameFrame         StartGame;
     //private boolean Entered = false;
     
     private Animation     Logo;
@@ -55,6 +55,8 @@ public final class MainApplication extends MyFrame{
                     setSelected(Entered = false);
                     CurrentFrame.setVisible(false);
                     UPS.setFrame(Game);*/
+                    CurrentFrame.setVisible(false);
+                    StartGame = new GameFrame(UPS,width,height,CurrentFrame);
                 }
             }
         };
