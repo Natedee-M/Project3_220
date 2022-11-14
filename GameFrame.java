@@ -25,6 +25,11 @@ public class GameFrame extends MyFrame{
     private JPanel Difficultypanel;
     private MyButton BackButton,PlayButton;
     
+    //Data before start game
+    private String UserName;
+    private int DiffIndex;
+    private int wavelength = 1100;
+    
     public GameFrame(UpdateFrameThread UPS, int frameWidth, int frameHeight ,MainApplication Menuframe){
         super("Penguin Edgerunner Gameplay");
         this.UPS = UPS;
@@ -77,16 +82,36 @@ public class GameFrame extends MyFrame{
         String [] Waveqty = {"1100","1200","1300","1400","1500"};
         Wave = new JComboBox(Waveqty);
         
+        Wave.addItemListener((ItemEvent e) -> {
+            switch(e.getItem().toString()){
+                case "1100" -> wavelength = Integer.parseInt(Waveqty[0]);
+                case "1200" -> wavelength = Integer.parseInt(Waveqty[1]);
+                case "1300" -> wavelength = Integer.parseInt(Waveqty[2]);
+                case "1400" -> wavelength = Integer.parseInt(Waveqty[3]);
+                case "1500" -> wavelength = Integer.parseInt(Waveqty[4]);
+                default -> {
+                }
+            }
+        });
+        
         for(int i = 0 ; i < Difficulty.length ; i++){
             DifficultyButton[i] = new JRadioButton(Difficulty[i]);
             DifficultyGroup.add(DifficultyButton[i]);
             DifficultyButton[i].setBackground(new Color(19, 43, 48));
             DifficultyButton[i].setForeground(Color.white);
-            if(i==0)DifficultyButton[i].setSelected(true);
+            if(i==0){DifficultyButton[i].setSelected(true);}
             Difficultypanel.add(DifficultyButton[i]);
         }
+        
+        DifficultyButton[0].addItemListener((ItemEvent e) -> {DiffIndex = 0;});
+        DifficultyButton[1].addItemListener((ItemEvent e) -> {DiffIndex = 1;});
+        DifficultyButton[2].addItemListener((ItemEvent e) -> {DiffIndex = 2;});
+        DifficultyButton[3].addItemListener((ItemEvent e) -> {DiffIndex = 3;});
+        DifficultyButton[4].addItemListener((ItemEvent e) -> {DiffIndex = 4;});
+        
         Difficultypanel.add(new JLabel("     Last Wave : ")).setForeground(Color.white);
         Difficultypanel.add(Wave);
+        
         
         BackButton = new MyButton(){
             @Override
@@ -109,6 +134,11 @@ public class GameFrame extends MyFrame{
             @Override
             public void mouseReleased(MouseEvent e) {
                 if(Entered&&!nameTextField.getText().equals("")){
+                    if(nameTextField.getText().length()>10) UserName = nameTextField.getText().substring(0, 10);
+                    else UserName = nameTextField.getText();
+                    System.out.println(UserName);
+                    System.out.println(wavelength);
+                    System.out.println(DiffIndex);
                     setSelected(Entered = false);
                     CurrentFrame.dispose();
                     MenuFrame.setVisible(true);
@@ -132,22 +162,15 @@ public class GameFrame extends MyFrame{
         PlayButton.addMouseListener(PlayButton);
         
         nameTextField.getDocument().addDocumentListener(new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) {
-              changed();
-            }
-            public void removeUpdate(DocumentEvent e) {
-              changed();
-            }
-            public void insertUpdate(DocumentEvent e) {
-              changed();
-            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {changed();}
+            @Override
+            public void removeUpdate(DocumentEvent e)  {changed();}
+            @Override
+            public void insertUpdate(DocumentEvent e)  {changed();}
             public void changed() {
-               if (nameTextField.getText().equals("")){
-                 PlayButton.setEnabled(false);
-               }
-               else {
-                 PlayButton.setEnabled(true);
-              }
+               if (nameTextField.getText().equals("")){PlayButton.setEnabled(false);}
+               else {PlayButton.setEnabled(true);}
 
             }
           });

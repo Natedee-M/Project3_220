@@ -125,7 +125,7 @@ public final class MainApplication extends MyFrame{
         });
         
         Logo = new Animation(19, 600,157);
-        Logo.setSpriteSheet(Path.SSPath+"Penguin_Edgerunner.png", 5,4, 1978,519, Image.SCALE_FAST);
+        Logo.setSpriteSheet(Path.SSPath+"Penguin_Edgerunner.png", 5,4, 600,157, Image.SCALE_FAST);
         
         
         MenuPanel.setBounds(15, 0, width, height);
