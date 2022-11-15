@@ -12,12 +12,12 @@ import java.lang.Math;
 
 public final class MainApplication extends MyFrame{
     private JPanel            MenuPanel;
-    private GameFrame         StartGame;
+    //private GameFrame         StartGame;
     //private boolean Entered = false;
     
     private Animation     Logo;
     private MyButton      Play;
-    private GameFrame      Game;
+    //private GameFrame      Game;
     private SettingButton Setting;
     private CreditButton  Credit;
     private MyButton      Exit;
@@ -32,7 +32,7 @@ public final class MainApplication extends MyFrame{
         setSize(width,height);
         setLocationRelativeTo(null);
         setDefaultCloseOperation( WindowConstants.EXIT_ON_CLOSE );
-        CurrentFrame = this;
+        MainFrame = this;
         
         ContentPane = new JLayeredPane();
         setContentPane(ContentPane);
@@ -55,20 +55,20 @@ public final class MainApplication extends MyFrame{
                     setSelected(Entered = false);
                     CurrentFrame.setVisible(false);
                     UPS.setFrame(Game);*/
-                    CurrentFrame.setVisible(false);
-                    StartGame = new GameFrame(UPS,width,height,CurrentFrame);
+                    MainFrame.setVisible(false);
+                    gameFrame = new GameFrame(UPS,width,height,MainFrame);
                 }
             }
         };
         Play.set3Icon(BTPath+"PlayButton.png");
-        Setting = new SettingButton(CurrentFrame, ContentPane, MenuPanel);
-        Credit = new CreditButton(CurrentFrame, ContentPane, MenuPanel);
+        Setting = new SettingButton(MainFrame, ContentPane, MenuPanel);
+        Credit = new CreditButton(MainFrame, ContentPane, MenuPanel);
         Exit = new MyButton(){
             @Override
             public void mouseReleased(MouseEvent e) {
                 if(Entered){
                     UPS.setGameOn(false);
-                    CurrentFrame.dispose();
+                    MainFrame.dispose();
                     System.exit(0);
                 }
             }
