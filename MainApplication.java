@@ -11,13 +11,10 @@ import javax.swing.*;
 import java.lang.Math;
 
 public final class MainApplication extends MyFrame{
-    private JPanel            MenuPanel;
-    //private GameFrame         StartGame;
-    //private boolean Entered = false;
+    private JPanel        MenuPanel;
     
     private Animation     Logo;
     private MyButton      Play;
-    //private GameFrame      Game;
     private SettingButton Setting;
     private CreditButton  Credit;
     private MyButton      Exit;
@@ -51,12 +48,10 @@ public final class MainApplication extends MyFrame{
             @Override
             public void mouseReleased(MouseEvent e) {
                 if(Entered){
-                    /*Game = new GameFrame();
                     setSelected(Entered = false);
-                    CurrentFrame.setVisible(false);
-                    UPS.setFrame(Game);*/
                     MainFrame.setVisible(false);
                     gameFrame = new GameFrame(UPS,width,height,MainFrame);
+                    UPS.setFrame(gameFrame);
                 }
             }
         };
@@ -98,7 +93,7 @@ public final class MainApplication extends MyFrame{
             Background[i].setIcon(new ImageIcon(img));
             Background[i].setBounds(-32, -18, 1344, 756);
         }
-        addMouseMotionListener(new MouseMotionAdapter(){
+        /*addMouseMotionListener(new MouseMotionAdapter(){
             private MouseEvent e;
             private boolean reachTarget;
             private Point cal(Point current, int j){
@@ -122,7 +117,7 @@ public final class MainApplication extends MyFrame{
                     for(int i =0,j=6; i<Background.length-1; i++,j--)  Background[i].setLocation(cal(Background[i].getLocation(),j));
                 }while(!reachTarget);
             }
-        });
+        });*/
         
         Logo = new Animation(19, 600,157);
         Logo.setSpriteSheet(Path.SSPath+"Penguin_Edgerunner.png", 5,4, 600,157, Image.SCALE_FAST);
@@ -143,8 +138,6 @@ public final class MainApplication extends MyFrame{
     
     @Override
     public void Update(int num) { if(num%20==0) Logo.update(); }
-    public int getwidth()       { return width; }
-    public int getheight()      { return height; }
 
     public static void main(String[] args) {
         UpdateFrameThread UPS = new UpdateFrameThread();

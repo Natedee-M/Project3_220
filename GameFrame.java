@@ -7,26 +7,28 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.*;
 
 public class GameFrame extends MyFrame{
+    private static final Color c1 = new Color(19, 43, 48);
+    private static final Color c2 = new Color(109, 139, 116);
+    private static final Color c3 = new Color(239, 234, 216);
     
-    private JPanel PregamePanel;
-    private JPanel BgPanel;
-    private JLayeredPane contentPane;
+    //Background
+    private JPanel   BgPanel;
+    private JLabel[] Background;
     
-    private JLabel[]     Background;
-    
-    //Enter Your name Component
-    private JLabel Text;
-    private JTextField nameTextField;
-    private JToggleButton [] DifficultyButton;
-    private JComboBox Wave;
-    private ButtonGroup DifficultyGroup;
-    private JPanel Difficultypanel;
-    private MyButton BackButton,PlayButton;
+    //Components
+    private JPanel          PregamePanel;
+    private JLabel           Text;
+    private JTextField       nameTextField;
+    private JPanel           Difficultypanel;
+    private ButtonGroup      DifficultyGroup;
+    private JToggleButton[]  DifficultyButton;
+    private JComboBox        Wave;
+    private MyButton         BackButton,PlayButton;
     
     //Data before start game
     private String UserName;
-    private int DiffIndex;
-    private int wavelength = 1100;
+    private int DiffIndex = 0;
+    private int wavelength = 5;
     
     public GameFrame(UpdateFrameThread UPS, int frameWidth, int frameHeight ,MainApplication Menuframe){
         super("Penguin Edgerunner Gameplay");
@@ -40,55 +42,55 @@ public class GameFrame extends MyFrame{
         setDefaultCloseOperation( WindowConstants.EXIT_ON_CLOSE );
         gameFrame = this;
         
-        contentPane = new JLayeredPane();
-        setContentPane(contentPane);
-        contentPane.setLayout(null);
-        contentPane.setBounds(0, 0, width, height);
+        ContentPane = new JLayeredPane();
+        setContentPane(ContentPane);
+        ContentPane.setLayout(null);
+        ContentPane.setBounds(0, 0, width, height);
         
         AddComponents();
 	setVisible(true);
     }
     
-    public void AddComponents(){
+    public final void AddComponents(){
         
-        Font font1 = new Font("SansSerif",Font.BOLD,50);
         Text = new JLabel("Enter Your Name");
-        Text.setFont(new Font("SansSerif",Font.BOLD,70));
+        Text.setBounds(290, 110, 700, 90);
         Text.setHorizontalAlignment(JTextField.CENTER);
-        Text.setBounds(0, -180, 1280, 720);
-        Text.setForeground(Color.white);
-        
-        JPanel TextPanel = new JPanel();
-        TextPanel.setBounds(290, 137, 700, 90);
-        TextPanel.setBackground(new Color(19, 43, 48));
-        TextPanel.setBorder(new LineBorder(new Color(0,0,0),5));
+        Text.setVerticalAlignment(JTextField.CENTER);
+        Text.setFont(new Font("SansSerif",Font.BOLD,70));
+        Text.setForeground(c1);
+        Text.setBackground(c3);
+        Text.setOpaque(true);
+        Text.setBorder(new LineBorder(c2,5));
         
         nameTextField = new JTextField();
-        nameTextField.setBounds(340, 243, 600, 70);
-        nameTextField.setFont(font1);
+        nameTextField.setBounds(340, 231, 600, 70);
         nameTextField.setHorizontalAlignment(JTextField.CENTER);
-        nameTextField.setBackground(new Color(73, 128, 104));
-        nameTextField.setBorder(new LineBorder(new Color(0,0,0),5));
-        nameTextField.setForeground(Color.white);
-        nameTextField.setDisabledTextColor(Color.black);
+        nameTextField.setFont(new Font("SansSerif",Font.BOLD,50));
+        nameTextField.setForeground(c1);
+        nameTextField.setBackground(new Color(255, 249, 227));
+        nameTextField.setBorder(new LineBorder(c1,5));
+        nameTextField.setDisabledTextColor(Color.RED);
+        
         
         String [] Difficulty = {"Medium","Hard","Expert","Insane", "Hell"};
+        String [] Waveqty = {"5","8","10","12","15"};
         DifficultyButton = new JRadioButton[Difficulty.length];
         DifficultyGroup = new ButtonGroup();
         Difficultypanel = new JPanel();
+        Wave = new JComboBox(Waveqty);
+        
         Difficultypanel.setAlignmentY(CENTER_ALIGNMENT);
-        Difficultypanel.setBounds(190, 330, 900, 130);
-        Difficultypanel.setBackground(new Color(19, 43, 48));
-        Difficultypanel.setBorder(new LineBorder(new Color(0,0,0),5));
+        Difficultypanel.setBounds(190, 332, 900, 130);
+        Difficultypanel.setBackground(c3);
+        Difficultypanel.setBorder(new LineBorder(c2,5));
+        
         JLabel TextDiff = new JLabel("Difficulty : ");
         TextDiff.setFont(new Font("SansSerif",Font.BOLD,30));
-        TextDiff.setForeground(Color.white);
+        TextDiff.setForeground(c1);
         Difficultypanel.add(TextDiff);
         
-        String [] Waveqty = {"5","8","10","12","15"};
-        Wave = new JComboBox(Waveqty);
         Wave.setFont(new Font("SansSerif",Font.BOLD,30));
-        
         Wave.addItemListener((ItemEvent e) -> {
             switch(e.getItem().toString()){
                 case "5"  -> wavelength = Integer.parseInt(Waveqty[0]);
@@ -105,12 +107,15 @@ public class GameFrame extends MyFrame{
             DifficultyButton[i] = new JRadioButton(Difficulty[i]);
             DifficultyButton[i].setFont(new Font("SansSerif",Font.BOLD,30));
             DifficultyGroup.add(DifficultyButton[i]);
-            DifficultyButton[i].setBackground(new Color(19, 43, 48));
-            DifficultyButton[i].setForeground(Color.white);
+            DifficultyButton[i].setOpaque(false);
+            DifficultyButton[i].setForeground(c1);
+            DifficultyButton[i].setBorderPainted(false);
+            DifficultyButton[i].setFocusable(false);
             if(i==0){DifficultyButton[i].setSelected(true);}
             Difficultypanel.add(DifficultyButton[i]);
         }
         
+        /*for(int i=0; i<Difficulty.length; i++) DifficultyButton[i].addItemListener((ItemEvent e) -> {DiffIndex = i;});*/
         DifficultyButton[0].addItemListener((ItemEvent e) -> {DiffIndex = 0;});
         DifficultyButton[1].addItemListener((ItemEvent e) -> {DiffIndex = 1;});
         DifficultyButton[2].addItemListener((ItemEvent e) -> {DiffIndex = 2;});
@@ -119,7 +124,7 @@ public class GameFrame extends MyFrame{
         
         JLabel TextLast = new JLabel("Last Wave : ");
         TextLast.setFont(new Font("SansSerif",Font.BOLD,30));
-        TextLast.setForeground(Color.white);
+        TextLast.setForeground(c1);
         Difficultypanel.add(TextLast);
         
         Difficultypanel.add(Wave);
@@ -129,14 +134,14 @@ public class GameFrame extends MyFrame{
             @Override
             public void mouseReleased(MouseEvent e) {
                 if(Entered){
-                    setSelected(Entered = false);
+                    UPS.setFrame(MainFrame);
                     gameFrame.dispose();
                     MainFrame.setVisible(true);
                 }
             }
         };
         BackButton.set3Icon(BTPath+"BackButton.png");
-        BackButton.setBounds(300, 472, 304, 98);
+        BackButton.setBounds(300, 493, 304, 98);
         BackButton.setBorderPainted(false);
         BackButton.setContentAreaFilled(false);
         BackButton.addMouseListener(BackButton);
@@ -151,8 +156,8 @@ public class GameFrame extends MyFrame{
                     System.out.println("Wave length = "+wavelength);
                     System.out.println("Difficulty  = "+ DiffIndex);
                     setSelected(Entered = false);
-                    contentPane.remove(PregamePanel);
-                    contentPane.repaint();
+                    ContentPane.remove(PregamePanel);
+                    ContentPane.repaint();
                 }
             }
             @Override
@@ -165,7 +170,7 @@ public class GameFrame extends MyFrame{
         };
         
         PlayButton.set3Icon(BTPath+"PlayButton.png");
-        PlayButton.setBounds(678, 472, 304, 98);
+        PlayButton.setBounds(678, BackButton.getY(), 304, 98);
         PlayButton.setBorderPainted(false);
         PlayButton.setContentAreaFilled(false);
         PlayButton.setEnabled(false);
@@ -187,12 +192,10 @@ public class GameFrame extends MyFrame{
           });
         
         Background = new JLabel[4];
-        Image img;
         for(int i = 0 ; i < Background.length ; i++){
             Background[i] = new JLabel();
-            img = new ImageIcon(BGPath+Integer.toString(i+1)+".png").getImage().getScaledInstance(1344, 756, Image.SCALE_SMOOTH);
-            Background[i].setIcon(new ImageIcon(img));
-            Background[i].setBounds(-32, -18, 1344, 756);
+            Background[i].setIcon(new ImageIcon(BGPath+"GameBG"+Integer.toString(i+1)+".png"));
+            Background[i].setBounds(0,0,1280,720);
         }
         
         BgPanel = new JPanel();
@@ -205,34 +208,17 @@ public class GameFrame extends MyFrame{
         PregamePanel.setOpaque(false);
         
         PregamePanel.add(Text,JLayeredPane.DEFAULT_LAYER);
-        PregamePanel.add(TextPanel,JLayeredPane.DEFAULT_LAYER);
         PregamePanel.add(nameTextField,JLayeredPane.DEFAULT_LAYER);
         PregamePanel.add(Difficultypanel,JLayeredPane.DEFAULT_LAYER);
         PregamePanel.add(BackButton,JLayeredPane.DEFAULT_LAYER);
         PregamePanel.add(PlayButton,JLayeredPane.DEFAULT_LAYER);
         for(JLabel i : Background) BgPanel.add(i);
         
-        contentPane.add(PregamePanel);
-        contentPane.add(BgPanel);
+        ContentPane.add(PregamePanel);
+        ContentPane.add(BgPanel);
         validate();
     }
     
     @Override
-    public void Update(int num){};
+    public void Update(int num){}
 }
-
-/*
-        A) new JFrame
-        B) add component in new panel
-            1 add JLabel: "Enter Your Name"
-            2 add TextField
-            3 add 2 buttons: Next, Back
-        C) add background
-        D.1) Back: close this JFrame => End
-        D.2) Next: Save the Name, then remove the panel
-        E) add new Panel
-        F) ...
-        
-        -need threads for each enemy and player's character
-        */
-        

@@ -7,6 +7,7 @@ import javax.swing.*;
 
 
 public abstract class MyButton extends JButton implements MouseListener, Path{
+    protected MyButton        CurrentButton;
     protected MainApplication Frame;
     protected JLayeredPane ContentPane;
     protected JPanel MenuPanel;
