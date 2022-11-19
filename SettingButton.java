@@ -103,7 +103,7 @@ public class SettingButton extends MyButton{
         BackButton.addMouseListener(BackButton);
         
         OwnPanel.setLayout(null);
-        OwnPanel.setBounds(275, 57, 703, Frame.getheight()-57);
+        OwnPanel.setBounds(275, 57, 703, Frame.getHeight()-57);
         OwnPanel.setOpaque(false);
         
         for(int i=0; i<path.length; i++) OwnPanel.add(text[i]);

@@ -30,6 +30,9 @@ public class GameFrame extends MyFrame{
     private int DiffIndex = 0;
     private int wavelength = 5;
     
+    private GamePanel gamepanel;
+    private Player player;
+    
     public GameFrame(UpdateFrameThread UPS, int frameWidth, int frameHeight ,MainApplication Menuframe){
         super("Penguin Edgerunner Gameplay");
         this.UPS = UPS;
@@ -48,7 +51,7 @@ public class GameFrame extends MyFrame{
         ContentPane.setBounds(0, 0, width, height);
         
         AddComponents();
-	setVisible(true);
+	    setVisible(true);
     }
     
     public final void AddComponents(){
@@ -145,6 +148,13 @@ public class GameFrame extends MyFrame{
         BackButton.setBorderPainted(false);
         BackButton.setContentAreaFilled(false);
         BackButton.addMouseListener(BackButton);
+        addWindowListener(new WindowAdapter(){
+            @Override
+            public void windowClosing(WindowEvent e) {
+                    UPS.setFrame(MainFrame);
+                    MainFrame.setVisible(true);
+            }
+        });
 
         PlayButton = new MyButton(){
             @Override
@@ -152,12 +162,10 @@ public class GameFrame extends MyFrame{
                 if(Entered&&!nameTextField.getText().equals("")){
                     if(nameTextField.getText().length()>10) UserName = nameTextField.getText().substring(0, 10);
                     else UserName = nameTextField.getText();
-                    System.out.println("Player name = "+UserName);
-                    System.out.println("Wave length = "+wavelength);
-                    System.out.println("Difficulty  = "+ DiffIndex);
                     setSelected(Entered = false);
-                    ContentPane.remove(PregamePanel);
-                    ContentPane.repaint();
+//                    gameFrame.ContentPane.remove(PregamePanel);
+//                    ContentPane.repaint();
+                    Loading();
                 }
             }
             @Override
@@ -207,18 +215,76 @@ public class GameFrame extends MyFrame{
         PregamePanel.setLayout(null);
         PregamePanel.setOpaque(false);
         
-        PregamePanel.add(Text,JLayeredPane.DEFAULT_LAYER);
-        PregamePanel.add(nameTextField,JLayeredPane.DEFAULT_LAYER);
-        PregamePanel.add(Difficultypanel,JLayeredPane.DEFAULT_LAYER);
-        PregamePanel.add(BackButton,JLayeredPane.DEFAULT_LAYER);
-        PregamePanel.add(PlayButton,JLayeredPane.DEFAULT_LAYER);
+        PregamePanel.add(Text);
+        PregamePanel.add(nameTextField);
+        PregamePanel.add(Difficultypanel);
+        PregamePanel.add(BackButton);
+        PregamePanel.add(PlayButton);
         for(JLabel i : Background) BgPanel.add(i);
         
-        ContentPane.add(PregamePanel);
-        ContentPane.add(BgPanel);
+        ContentPane.add(PregamePanel,JLayeredPane.DRAG_LAYER);
+        ContentPane.add(BgPanel,JLayeredPane.DEFAULT_LAYER);
         validate();
     }
     
+    private void Loading(){
+        ContentPane.remove(PregamePanel);
+        class Load extends Thread{
+            private boolean finish = false;
+            private JLabel loading = new JLabel();
+            @Override
+            public void run(){
+                loading.setBounds(0, 0, 1280, 720);
+                loading.setHorizontalAlignment(JTextField.CENTER);
+                loading.setVerticalAlignment(JTextField.CENTER);
+                loading.setFont(new Font("SansSerif",Font.BOLD,45));
+                loading.setForeground(c1);
+                loading.setOpaque(false);
+                ContentPane.add(loading, JLayeredPane.DRAG_LAYER);
+                for(int i=2; !finish; i=(i+1)%3){
+                    String text = switch(i){
+                        case 0 -> "Loading.";
+                        case 1 -> "Loading..";
+                        default -> "Loading...";
+                    };
+                    loading.setText(text);
+                    try { Thread.sleep(700); } catch (InterruptedException ex) {System.out.println("yo");}
+                }
+                ContentPane.remove(loading);
+            }
+            public void finish(){
+                finish=true;
+                interrupt();
+            }
+        }
+        Load ShowText = new Load();
+        ShowText.start();
+        
+        gamepanel = new GamePanel(gameFrame);
+        player = new Player(gameFrame,gamepanel);
+
+        ShowText.finish();
+        gamepanel.add(player);
+        ContentPane.add(gamepanel, JLayeredPane.MODAL_LAYER);
+        System.out.println("add player");
+        player.setFocusable(true);
+        player.requestFocus();
+        player.addKeyListener(player);
+        /*
+        1.create a thread that repeat showing text 'Loading...'
+          -ContentPane.add(JLabel)
+          -setText() in while-loop
+          -remove the JLabel
+          -add GamePanel and others
+        2.main thread loads all data into program
+        3.main thread stop the loop in thread 1.
+        4.add in contentpane
+        */
+    }
+    
     @Override
-    public void Update(int num){}
+    public void Update(int num){
+
+//        player.updateAni();
+    }
 }

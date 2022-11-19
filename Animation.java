@@ -5,9 +5,9 @@ import java.awt.Image;
 import javax.swing.*;
 
 public class Animation extends JLabel implements Path{
-    private int maxindex = 1, Index = 0;
-    private int pwidth, pheight;
-    private ImageIcon[] icon;
+    protected int maxindex = 1, Index = 0;
+    protected int pwidth, pheight;
+    protected ImageIcon[] icon;
 
     public Animation(){}
     public Animation(int max, int pwidth, int pheight){

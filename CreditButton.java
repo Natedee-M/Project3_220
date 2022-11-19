@@ -44,7 +44,7 @@ public class CreditButton extends MyButton{
         BackButton.addMouseListener(BackButton);
         
         OwnPanel.setLayout(null);
-        OwnPanel.setBounds(275, 57, 729, Frame.getheight()-57);
+        OwnPanel.setBounds(275, 57, 729, Frame.getHeight()-57);
         OwnPanel.setOpaque(false);
         
         OwnPanel.add(credits);
