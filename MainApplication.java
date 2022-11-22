@@ -33,12 +33,13 @@ public final class MainApplication extends MyFrame{
         
         ContentPane = new JLayeredPane();
         setContentPane(ContentPane);
+        setBackground(new Color(109,131,116));
         ContentPane.setLayout(null);
         
         AddComponents();
         
         ContentPane.setBounds(0, 0, width, height);
-	setVisible(true);
+	    setVisible(true);
     }
     
     public void AddComponents(){
@@ -93,7 +94,7 @@ public final class MainApplication extends MyFrame{
             Background[i].setIcon(new ImageIcon(img));
             Background[i].setBounds(-32, -18, 1344, 756);
         }
-        /*addMouseMotionListener(new MouseMotionAdapter(){
+        addMouseMotionListener(new MouseMotionAdapter(){
             private MouseEvent e;
             private boolean reachTarget;
             private Point cal(Point current, int j){
@@ -117,7 +118,7 @@ public final class MainApplication extends MyFrame{
                     for(int i =0,j=6; i<Background.length-1; i++,j--)  Background[i].setLocation(cal(Background[i].getLocation(),j));
                 }while(!reachTarget);
             }
-        });*/
+        });
         
         Logo = new Animation(19, 600,157);
         Logo.setSpriteSheet(Path.SSPath+"Penguin_Edgerunner.png", 5,4, 600,157, Image.SCALE_FAST);

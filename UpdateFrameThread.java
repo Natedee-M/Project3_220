@@ -5,7 +5,7 @@ import javax.swing.JFrame;
 
 public class UpdateFrameThread extends Thread{
     private final int FPS = 120;
-    private final int UPS = 200;
+    private final int UPS = 300;
     private MyFrame frame;
     private boolean GameOn = true;
     

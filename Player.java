@@ -1,107 +1,165 @@
 package Project3_220;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.util.ArrayList;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.Random;
 
 public class Player extends Creature implements KeyListener{
-    private static final int Attack=0;
-    private static final int Idle=1;
-    private static final int Run=2;
-    private static final int Roll=3;
-    private static final int Hit=4;
-    private static final int Death=5;
-    private int Status;
-    private int MP;
+    private int MP, lastAtk=0;
+    private int actionindex=Idle, frameindex=0;
+    private boolean pressA=false, pressD=false, roll=false;
+    private boolean atk=false,    hit=false,    death=false;
 
     public Player(GameFrame gameFrame,GamePanel gamePanel){
         this.gameFrame = gameFrame;
         this.gamePanel=gamePanel;
-        self = this;
-        height = 280;
+        height = 420;
         width =  height*120/80;
         setMaxHP(1000);
-        setHP(1000);
-        velocity=15;
+        velocity=1;
         MP=800;
-        Status = 2;
 
-        String[] picname = {"Attack","Attack2","AttackCombo",
-                "Idle","Run","Roll","Hit","Death"};//CrouchTransition","Crouch","CrouchWalk","CrouchAttack",
-        SpriteSheet = new ImageIcon[picname.length][12];
-        for (int i = 0; i < picname.length ; i++) {
-            ImageIcon pic = new ImageIcon(SSPath+"Knight/_"+picname[i]);
-            for (int j = 0; j < pic.getIconWidth()/120; j++) {
-                Image image = Path.crop(pic.getImage(),j*120,0,120,80).getScaledInstance(width,height,Image.SCALE_SMOOTH);
-                SpriteSheet[i][j] = new ImageIcon(image);
-            }
-        }
+        importImages();
 
         setBounds(1280-width/2, 560-height, width, height);
-        setBackground(Color.LIGHT_GRAY);
-        setOpaque(true);
+        setOpaque(false);
+    }
+    private void importImages(){
+        String[] picname = {"Attack", "Attack2", "AttackCombo", "Idle", "Run", "Roll", "Hit", "Death"};
+        Animation = new BufferedImage[picname.length][12];
+
+        for (int i = 0; i < picname.length; i++) {
+            try {
+                BufferedImage fullpic = ImageIO.read(new File(SSPath+"Knight/_"+picname[i]+".png"));
+
+                for (int j = 0; j < fullpic.getWidth()/120; j++)
+                    Animation[i][j] = Path.resizeBuffer(fullpic.getSubimage(j*120,0,120,80),width,height);
+
+                if(i==Hit) Animation[i][1] =Animation[i][2] =Animation[i][3] =Animation[i][0];
+            } catch (IOException e) { }
+        }
     }
 
     public void updateAni(int update){
-        int i,j;
-        switch(Status){
-            case Attack:
-                i = new Random().nextInt(3);
-                break;
-        }
-        j = switch (i){
-            case 0->
-        };
-        setIcon(SpriteSheet[i][j]);
-    }
-//    private int getSpriteSheetNum
-    private void setStatus(){//int status
-        if(walk){
-            Status = Run;
-        }
+        if(update%20==0){
+            int maxindex = switch (actionindex) {
+                case Attack, Hit -> 4;
+                case Attack + 1 -> 6;
+                case Attack + 2, Death, Idle, Run -> 10;
+                case Roll -> 12;
+                default -> 1;
+            };
+            frameindex = ++frameindex % maxindex;
+            if(!facingLeft) setIcon(new ImageIcon(Animation[actionindex][frameindex]));
+            else setIcon(new ImageIcon(Path.flipH(Animation[actionindex][frameindex])));
 
+            if (actionindex == Death && frameindex == maxindex - 1) frameindex--;
+            else if (actionindex <= Attack + 2 && frameindex == maxindex - 1) {
+                atk = false;
+                if (pressA || pressD) actionindex = Run;
+                else actionindex = Idle;
+                frameindex = 0;
+            }
+            else if (actionindex == Roll && frameindex == maxindex - 1) {
+                roll = false;
+                if (pressA || pressD) actionindex = Run;
+                else actionindex = Idle;
+                frameindex = 0;
+            }
+        }
+        doWalk();
     }
     @Override
     public void keyPressed(KeyEvent e) {
-        switch (e.getKeyCode()){
-            case KeyEvent.VK_A:
-                if(getLocationOnScreen().x-velocity>gameFrame.getX())
-                    setLocation(getX()-velocity, getY());
-                walk = true;
-                gamePanel.setlocation(getLocationOnScreen().x,getX(),velocity);
-                break;
-            case KeyEvent.VK_D:
-                if(getLocationOnScreen().x+width+velocity<gamePanel.getLocationOnScreen().x+gamePanel.getWidth())
-                    setLocation(getX()+velocity, getY());
-                walk = true;
-                gamePanel.setlocation(getLocationOnScreen().x+width,getX()+width,velocity*-1);
-                break;
-            /*case KeyEvent.VK_S://
-                //roll
-                break;*/
+        if(!death&&!hit&&!roll&&!atk) {
+            switch (e.getKeyCode()) {
+                case KeyEvent.VK_A:
+                    pressA = true;
+                    facingLeft = true;
+                    break;
+                case KeyEvent.VK_D:
+                    pressD = true;
+                    facingLeft = false;
+                    break;
+                case KeyEvent.VK_K:
+                    doAtk();
+                    break;
+                case KeyEvent.VK_SPACE:
+                    doRoll();
+                    break;
+            }
+            setStatus();
         }
-        setStatus();
     }
     @Override
     public void keyReleased(KeyEvent e) {
         switch (e.getKeyCode()){
             case KeyEvent.VK_A:
-                walk = false;
+                 pressA= false;
+                 if(pressD) facingLeft=false;
                 break;
             case KeyEvent.VK_D:
-                walk = false;
+                 pressD= false;
+                 if(pressA) facingLeft=true;
                 break;
-            /*case KeyEvent.VK_S://
-                //roll
-                break;*/
         }
         setStatus();
     }
+    private void setStatus(){
+        if(death) actionindex = Death;
+        else{
+            if(hit) {
+                actionindex = Hit;
+                atk=false;
+            }
+            else{
+                if(roll) actionindex=Roll;
+                else{
+                    if(!atk){
+                        if(pressA || pressD){
+                            if(actionindex!=Run) frameindex=0;
+                            actionindex=Run;
+                        }
+                        else{
+                            if(actionindex!=Idle) frameindex=0;
+                            actionindex=Idle;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    private void doWalk(){
+        if(!death&&!hit&&!atk) {
+            if (facingLeft) {
+                if(roll || (pressA && getLocationOnScreen().x+(25*width/80) - velocity >= gameFrame.getX()))
+                    setLocation(getX() - velocity, getY());
+            } else {
+                if(roll || (pressD && getLocationOnScreen().x-(3*width/8) + width + velocity < gamePanel.getLocationOnScreen().x + gamePanel.getWidth()))
+                    setLocation(getX() + velocity, getY());
+            }
+        }
 
-    public int getVelocity(){ return velocity; }
+        gamePanel.setlocation(getLocationOnScreen().x,width,facingLeft,velocity);
+    }
+    private void doAtk(){
+        if(!hit&&!death&&!roll&&!atk){
+            atk=true;
+            actionindex=Attack+new Random().nextInt(3);
+            frameindex=0;
+        }
+    }
+    private void doRoll(){
+        if(!hit&&!death&&!roll){
+            roll=true;
+            frameindex=0;
+        }
+    }
     @Override
     public void keyTyped(KeyEvent e) { }
 }

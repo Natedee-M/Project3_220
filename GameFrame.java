@@ -17,13 +17,6 @@ public class GameFrame extends MyFrame{
     
     //Components
     private JPanel          PregamePanel;
-    private JLabel           Text;
-    private JTextField       nameTextField;
-    private JPanel           Difficultypanel;
-    private ButtonGroup      DifficultyGroup;
-    private JToggleButton[]  DifficultyButton;
-    private JComboBox        Wave;
-    private MyButton         BackButton,PlayButton;
     
     //Data before start game
     private String UserName;
@@ -32,7 +25,8 @@ public class GameFrame extends MyFrame{
     
     private GamePanel gamepanel;
     private Player player;
-    
+    private boolean playing=false;
+
     public GameFrame(UpdateFrameThread UPS, int frameWidth, int frameHeight ,MainApplication Menuframe){
         super("Penguin Edgerunner Gameplay");
         this.UPS = UPS;
@@ -43,10 +37,12 @@ public class GameFrame extends MyFrame{
         setSize(width,height);
         setLocationRelativeTo(null);
         setDefaultCloseOperation( WindowConstants.EXIT_ON_CLOSE );
+        setMinimumSize(new Dimension(640,360));
         gameFrame = this;
         
         ContentPane = new JLayeredPane();
         setContentPane(ContentPane);
+        setBackground(new Color(42,28,43));
         ContentPane.setLayout(null);
         ContentPane.setBounds(0, 0, width, height);
         
@@ -55,6 +51,13 @@ public class GameFrame extends MyFrame{
     }
     
     public final void AddComponents(){
+        JLabel           Text;
+        JTextField       nameTextField;
+        JPanel           Difficultypanel;
+        ButtonGroup      DifficultyGroup;
+        JToggleButton[]  DifficultyButton;
+        JComboBox        Wave;
+        MyButton         BackButton,PlayButton;
         
         Text = new JLabel("Enter Your Name");
         Text.setBounds(290, 110, 700, 90);
@@ -75,37 +78,28 @@ public class GameFrame extends MyFrame{
         nameTextField.setBorder(new LineBorder(c1,5));
         nameTextField.setDisabledTextColor(Color.RED);
         
-        
-        String [] Difficulty = {"Medium","Hard","Expert","Insane", "Hell"};
-        String [] Waveqty = {"5","8","10","12","15"};
-        DifficultyButton = new JRadioButton[Difficulty.length];
-        DifficultyGroup = new ButtonGroup();
+
         Difficultypanel = new JPanel();
-        Wave = new JComboBox(Waveqty);
-        
         Difficultypanel.setAlignmentY(CENTER_ALIGNMENT);
         Difficultypanel.setBounds(190, 332, 900, 130);
         Difficultypanel.setBackground(c3);
         Difficultypanel.setBorder(new LineBorder(c2,5));
-        
-        JLabel TextDiff = new JLabel("Difficulty : ");
-        TextDiff.setFont(new Font("SansSerif",Font.BOLD,30));
-        TextDiff.setForeground(c1);
+          JLabel TextDiff = new JLabel("Difficulty : ");
+          TextDiff.setFont(new Font("SansSerif",Font.BOLD,30));
+          TextDiff.setForeground(c1);
         Difficultypanel.add(TextDiff);
-        
+
+        String [] Waveqty = {"5","8","10","12","15"};
+        Wave = new JComboBox(Waveqty);
         Wave.setFont(new Font("SansSerif",Font.BOLD,30));
         Wave.addItemListener((ItemEvent e) -> {
-            switch(e.getItem().toString()){
-                case "5"  -> wavelength = Integer.parseInt(Waveqty[0]);
-                case "8"  -> wavelength = Integer.parseInt(Waveqty[1]);
-                case "10" -> wavelength = Integer.parseInt(Waveqty[2]);
-                case "12" -> wavelength = Integer.parseInt(Waveqty[3]);
-                case "15" -> wavelength = Integer.parseInt(Waveqty[4]);
-                default -> {
-                }
-            }
+            wavelength = Integer.parseInt(e.getItem().toString());//if(e.getStateChange()==ItemEvent.SELECTED)
         });
-        
+        Wave.setFocusable(false);
+
+        String [] Difficulty = {"Medium","Hard","Expert","Insane","Hell"};
+        DifficultyButton = new JRadioButton[Difficulty.length];
+        DifficultyGroup = new ButtonGroup();
         for(int i = 0 ; i < Difficulty.length ; i++){
             DifficultyButton[i] = new JRadioButton(Difficulty[i]);
             DifficultyButton[i].setFont(new Font("SansSerif",Font.BOLD,30));
@@ -114,22 +108,18 @@ public class GameFrame extends MyFrame{
             DifficultyButton[i].setForeground(c1);
             DifficultyButton[i].setBorderPainted(false);
             DifficultyButton[i].setFocusable(false);
-            if(i==0){DifficultyButton[i].setSelected(true);}
+            if(i==0) DifficultyButton[i].setSelected(true);
             Difficultypanel.add(DifficultyButton[i]);
         }
-        
-        /*for(int i=0; i<Difficulty.length; i++) DifficultyButton[i].addItemListener((ItemEvent e) -> {DiffIndex = i;});*/
-        DifficultyButton[0].addItemListener((ItemEvent e) -> {DiffIndex = 0;});
-        DifficultyButton[1].addItemListener((ItemEvent e) -> {DiffIndex = 1;});
-        DifficultyButton[2].addItemListener((ItemEvent e) -> {DiffIndex = 2;});
-        DifficultyButton[3].addItemListener((ItemEvent e) -> {DiffIndex = 3;});
-        DifficultyButton[4].addItemListener((ItemEvent e) -> {DiffIndex = 4;});
-        
+        for(int i=0; i<Difficulty.length; i++) {
+            int finalI = i;
+            DifficultyButton[i].addItemListener((ItemEvent e) -> {DiffIndex = finalI;});
+        }
         JLabel TextLast = new JLabel("Last Wave : ");
         TextLast.setFont(new Font("SansSerif",Font.BOLD,30));
         TextLast.setForeground(c1);
+
         Difficultypanel.add(TextLast);
-        
         Difficultypanel.add(Wave);
         
         
@@ -163,8 +153,6 @@ public class GameFrame extends MyFrame{
                     if(nameTextField.getText().length()>10) UserName = nameTextField.getText().substring(0, 10);
                     else UserName = nameTextField.getText();
                     setSelected(Entered = false);
-//                    gameFrame.ContentPane.remove(PregamePanel);
-//                    ContentPane.repaint();
                     Loading();
                 }
             }
@@ -176,7 +164,6 @@ public class GameFrame extends MyFrame{
             @Override
             public void mouseExited(MouseEvent e)  { if(!nameTextField.getText().equals(""))this.setSelected(Entered = false); }
         };
-        
         PlayButton.set3Icon(BTPath+"PlayButton.png");
         PlayButton.setBounds(678, BackButton.getY(), 304, 98);
         PlayButton.setBorderPainted(false);
@@ -224,7 +211,6 @@ public class GameFrame extends MyFrame{
         
         ContentPane.add(PregamePanel,JLayeredPane.DRAG_LAYER);
         ContentPane.add(BgPanel,JLayeredPane.DEFAULT_LAYER);
-        validate();
     }
     
     private void Loading(){
@@ -234,12 +220,13 @@ public class GameFrame extends MyFrame{
             private JLabel loading = new JLabel();
             @Override
             public void run(){
-                loading.setBounds(0, 0, 1280, 720);
+                loading.setBounds(0, (height-150)/2, 1280, 150);
                 loading.setHorizontalAlignment(JTextField.CENTER);
                 loading.setVerticalAlignment(JTextField.CENTER);
-                loading.setFont(new Font("SansSerif",Font.BOLD,45));
+                loading.setFont(new Font("SansSerif",Font.BOLD,90));
                 loading.setForeground(c1);
-                loading.setOpaque(false);
+                loading.setBackground(new Color(239, 234, 216,60));
+                loading.setOpaque(true);
                 ContentPane.add(loading, JLayeredPane.DRAG_LAYER);
                 for(int i=2; !finish; i=(i+1)%3){
                     String text = switch(i){
@@ -248,7 +235,7 @@ public class GameFrame extends MyFrame{
                         default -> "Loading...";
                     };
                     loading.setText(text);
-                    try { Thread.sleep(700); } catch (InterruptedException ex) {System.out.println("yo");}
+                    try { Thread.sleep(600); } catch (InterruptedException ex) {}
                 }
                 ContentPane.remove(loading);
             }
@@ -264,27 +251,17 @@ public class GameFrame extends MyFrame{
         player = new Player(gameFrame,gamepanel);
 
         ShowText.finish();
-        gamepanel.add(player);
+        gamepanel.add(player,JLayeredPane.DRAG_LAYER);
         ContentPane.add(gamepanel, JLayeredPane.MODAL_LAYER);
-        System.out.println("add player");
         player.setFocusable(true);
         player.requestFocus();
         player.addKeyListener(player);
-        /*
-        1.create a thread that repeat showing text 'Loading...'
-          -ContentPane.add(JLabel)
-          -setText() in while-loop
-          -remove the JLabel
-          -add GamePanel and others
-        2.main thread loads all data into program
-        3.main thread stop the loop in thread 1.
-        4.add in contentpane
-        */
+        playing = true;
     }
-    
     @Override
     public void Update(int num){
-
-//        player.updateAni();
+        if(playing) {
+            player.updateAni(num);
+        }
     }
 }

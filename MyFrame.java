@@ -13,7 +13,4 @@ public abstract class MyFrame extends JFrame implements Path{
     public MyFrame(String t){ super(t); }
     
     public abstract void Update(int num);
-    
-//    public int getwidth(){return width;}
-//    public int getheight(){return height;}
 }

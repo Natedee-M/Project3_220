@@ -1,7 +1,6 @@
 package Project3_220;
 
 import java.awt.*;
-import java.awt.event.KeyListener;
 import javax.swing.*;
 
 public class GamePanel extends JLayeredPane implements Path{
@@ -16,13 +15,19 @@ public class GamePanel extends JLayeredPane implements Path{
         for(int i=0; i<2; i++){
             JLabel g = new JLabel(new ImageIcon(BGPath+"GameBG1.png"));
             g.setBounds(i*1280, 0, 1280, 720);
-            add(g);
+            add(g,JLayeredPane.DRAG_LAYER);
         }
     }
 
-    public void setlocation(int xscreen, int px, int vel){
-        if(vel>0 && xscreen<gameFrame.getX()+gameFrame.getWidth()/5   && getX()+vel<=0 ||
-           vel<0 && xscreen>gameFrame.getX()+gameFrame.getWidth()*4/5 && getX()+getWidth()+vel>gameFrame.getWidth())
-                setLocation(getX()+vel, 0);
+    public void setlocation(int xonscreen, int width, boolean facingLeft, int vel){
+        if(facingLeft){
+            if(xonscreen<gameFrame.getX()+gameFrame.getWidth()/5 && getX()+vel<=0)
+                setLocation(getX()+vel, getY());
+        }
+        else {
+            if(xonscreen+width>gameFrame.getX()+gameFrame.getWidth()*4/5 &&
+              getX()+getWidth()-vel>gameFrame.getWidth())
+                setLocation(getX()-vel, getY());
+        }
     }
 }
