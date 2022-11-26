@@ -4,27 +4,25 @@ import java.awt.image.BufferedImage;
 import javax.swing.*;
 
 public abstract class Creature extends JLabel implements Path {
-    protected static final int Attack=0;
-    protected static final int Idle=3;
-    protected static final int Run=4;
-    protected static final int Roll=5;
-    protected static final int Hit=6;
-    protected static final int Death=7;
-
     protected GameFrame gameFrame;
     protected GamePanel gamePanel;
     protected int width, height;
-    private   int MaxHP, HP;
-    protected int velocity;
+    private   int MaxHP=800, HP=800;
+    protected int velocity, lastAtk=0, maxAtk=1;
+    protected int actionindex, frameindex=0;
 
     protected BufferedImage[][] Animation;
-    protected boolean facingLeft = false;
-    protected void setMaxHP(int maxHP){
-        MaxHP = maxHP;
-        setHP(MaxHP);
-    }
-    protected void setHP(int hp){
-        HP = hp;
-        //set the hp bar
-    }
+    protected boolean facingLeft = false, walking = false, spawning = true;
+    protected boolean atk=false,    hit=false,    death=false,  doDamage=false;
+
+    protected void setMaxHP(int maxHP)  { MaxHP = maxHP; }
+    protected void setHP(int hp)           { HP = hp; }//set the hp bar
+    protected int getHP()               { return HP; }
+
+    //Enemy method
+    public abstract void checkStatus();
+    public void doWalk(int update){}
+    public abstract void doWalk();
+    public abstract void updateAni(int update);
+
 }

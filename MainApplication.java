@@ -39,7 +39,7 @@ public final class MainApplication extends MyFrame{
         AddComponents();
         
         ContentPane.setBounds(0, 0, width, height);
-	    setVisible(true);
+        setVisible(true);
     }
     
     public void AddComponents(){
@@ -51,7 +51,7 @@ public final class MainApplication extends MyFrame{
                 if(Entered){
                     setSelected(Entered = false);
                     MainFrame.setVisible(false);
-                    gameFrame = new GameFrame(UPS,width,height,MainFrame);
+                    gameFrame = new GameFrame(UPS,width,height,MainFrame,Setting);
                     UPS.setFrame(gameFrame);
                 }
             }
@@ -139,6 +139,16 @@ public final class MainApplication extends MyFrame{
     
     @Override
     public void Update(int num) { if(num%20==0) Logo.update(); }
+    public void refresh(){//for what?
+        MenuPanel.removeAll();
+        MenuPanel.add(Logo);
+        MenuPanel.add(Play);
+        MenuPanel.add(Setting);
+        MenuPanel.add(Credit);
+        MenuPanel.add(Exit);
+        Setting.SettingConfig(false);
+        validate();
+    }
 
     public static void main(String[] args) {
         UpdateFrameThread UPS = new UpdateFrameThread();

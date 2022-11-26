@@ -2,6 +2,7 @@ package Project3_220;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
@@ -10,10 +11,15 @@ import java.io.IOException;
 import java.util.Random;
 
 public class Player extends Creature implements KeyListener{
-    private int MP, lastAtk=0;
-    private int actionindex=Idle, frameindex=0;
+    private static final int Attack=0;
+    private static final int Idle=3;
+    private static final int Run=4;
+    private static final int Roll=5;
+    private static final int Hit=6;
+    private static final int Death=7;
+
     private boolean pressA=false, pressD=false, roll=false;
-    private boolean atk=false,    hit=false,    death=false;
+    private int MP;
 
     public Player(GameFrame gameFrame,GamePanel gamePanel){
         this.gameFrame = gameFrame;
@@ -21,12 +27,16 @@ public class Player extends Creature implements KeyListener{
         height = 420;
         width =  height*120/80;
         setMaxHP(1000);
+        setHP(1000);
         velocity=1;
-        MP=800;
+        lastAtk = 2; maxAtk = 3;
+        actionindex = Idle;
+//        MP=800;
 
         importImages();
 
         setBounds(1280-width/2, 560-height, width, height);
+//        setBackground(Color.GRAY);
         setOpaque(false);
     }
     private void importImages(){
@@ -58,21 +68,26 @@ public class Player extends Creature implements KeyListener{
             if(!facingLeft) setIcon(new ImageIcon(Animation[actionindex][frameindex]));
             else setIcon(new ImageIcon(Path.flipH(Animation[actionindex][frameindex])));
 
-            if (actionindex == Death && frameindex == maxindex - 1) frameindex--;
-            else if (actionindex <= Attack + 2 && frameindex == maxindex - 1) {
-                atk = false;
-                if (pressA || pressD) actionindex = Run;
-                else actionindex = Idle;
-                frameindex = 0;
-            }
-            else if (actionindex == Roll && frameindex == maxindex - 1) {
-                roll = false;
-                if (pressA || pressD) actionindex = Run;
-                else actionindex = Idle;
-                frameindex = 0;
+            if(frameindex == maxindex - 1){
+                if (actionindex == Death) frameindex--;
+                else if (actionindex == Hit){
+                    hit = false;
+                }
+                else if (actionindex <= Attack + 2) {
+                    atk = false;
+                    if (pressA || pressD) actionindex = Run;
+                    else actionindex = Idle;
+                    frameindex = 0;
+                }
+                else if (actionindex == Roll) {
+                    roll = false;
+                    if (pressA || pressD) actionindex = Run;
+                    else actionindex = Idle;
+                    frameindex = 0;
+                }
             }
         }
-        doWalk();
+        if(update%velocity==0) doWalk();
     }
     @Override
     public void keyPressed(KeyEvent e) {
@@ -93,7 +108,7 @@ public class Player extends Creature implements KeyListener{
                     doRoll();
                     break;
             }
-            setStatus();
+            checkStatus();
         }
     }
     @Override
@@ -108,10 +123,14 @@ public class Player extends Creature implements KeyListener{
                  if(pressA) facingLeft=true;
                 break;
         }
-        setStatus();
+        checkStatus();
     }
-    private void setStatus(){
-        if(death) actionindex = Death;
+    @Override
+    public void checkStatus() {//private void setStatus()
+        if(death) {
+            if (actionindex!=Death) frameindex=0;
+            actionindex = Death;
+        }
         else{
             if(hit) {
                 actionindex = Hit;
@@ -134,23 +153,25 @@ public class Player extends Creature implements KeyListener{
             }
         }
     }
-    private void doWalk(){
+    public void doWalk(){
         if(!death&&!hit&&!atk) {
             if (facingLeft) {
-                if(roll || (pressA && getLocationOnScreen().x+(25*width/80) - velocity >= gameFrame.getX()))
-                    setLocation(getX() - velocity, getY());
+                if(roll || (pressA && getLocationOnScreen().x+(3*width/8) - 1 >= gameFrame.getX()))
+                    setLocation(getX() - 1, getY());
             } else {
-                if(roll || (pressD && getLocationOnScreen().x-(3*width/8) + width + velocity < gamePanel.getLocationOnScreen().x + gamePanel.getWidth()))
-                    setLocation(getX() + velocity, getY());
+                if(roll || (pressD && getLocationOnScreen().x+(5*width/8) + 1 < gamePanel.getLocationOnScreen().x + gamePanel.getWidth()))
+                    setLocation(getX() + 1, getY());
             }
         }
 
-        gamePanel.setlocation(getLocationOnScreen().x,width,facingLeft,velocity);
+        gamePanel.setlocation(getLocationOnScreen().x,width,facingLeft);
     }
+
     private void doAtk(){
         if(!hit&&!death&&!roll&&!atk){
             atk=true;
-            actionindex=Attack+new Random().nextInt(3);
+            lastAtk = ++lastAtk%maxAtk;
+            actionindex=lastAtk;
             frameindex=0;
         }
     }
@@ -162,4 +183,40 @@ public class Player extends Creature implements KeyListener{
     }
     @Override
     public void keyTyped(KeyEvent e) { }
+    //override
+    @Override
+    public void setHP(int hp){
+        super.setHP(hp);
+        //set the HP bar
+    }
+
+    //Working with Enemy
+    public Rectangle getHitBox(){
+        Rectangle t = getBounds();
+        return new Rectangle(t.x+45*42/8, t.y,  30*42/8, t.height);
+    }
+    public boolean canBeAttacked(int x, int width){
+        x = x+width*2/5;
+        int px = getLocationOnScreen().x+this.width*3/8;
+        int hitBoxWidth = this.width/4;
+        return x==px || (x>px && x-px+hitBoxWidth<=width/10) || (x<px && px-x+width/5<=width/10);
+    }
+    public boolean isOnTheLeft(int x){
+        return getLocationOnScreen().x<x;
+    }
+    public void gotAttacked(int damage){
+        int hp = getHP()-damage;
+        if(hp<=0){
+            death = true;
+            hp = 0;
+        }
+        else {
+            hit = true;
+            frameindex = 0;
+        }
+        setHP(hp);
+        System.out.println(hp);
+
+        checkStatus();
+    }
 }

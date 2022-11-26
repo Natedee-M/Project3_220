@@ -17,7 +17,7 @@ public abstract class MyButton extends JButton implements MouseListener, Path{
     //public void setPanel(JPanel MenuPanel){ this.MenuPanel = MenuPanel; }
     public void setPanel(MainApplication Frame, JLayeredPane Content, JPanel MenuPanel, JPanel OwnPanel){}
     
-    public final void set3Icon(String path){
+    public void set3Icon(String path){
         ImageIcon ic = new ImageIcon(path);
         Image[] img = new Image[3];//mouse_enter, mouse_exit, mouse_press
         for(int i=0; i<img.length; i++) img[i] = Path.crop(ic.getImage(), 0,i*99, 304,99);

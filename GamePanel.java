@@ -1,10 +1,8 @@
 package Project3_220;
 
-import java.awt.*;
 import javax.swing.*;
 
 public class GamePanel extends JLayeredPane implements Path{
-    private final Rectangle ground = new Rectangle(0, 560, 1280*2, 160);
     private GameFrame gameFrame;
 
     public GamePanel(GameFrame gameFrame){
@@ -19,15 +17,15 @@ public class GamePanel extends JLayeredPane implements Path{
         }
     }
 
-    public void setlocation(int xonscreen, int width, boolean facingLeft, int vel){
+    public void setlocation(int xonscreen, int width, boolean facingLeft){
         if(facingLeft){
-            if(xonscreen<gameFrame.getX()+gameFrame.getWidth()/5 && getX()+vel<=0)
-                setLocation(getX()+vel, getY());
+            if(xonscreen<gameFrame.getX()+gameFrame.getWidth()/5 && getX()+1<=0)
+                setLocation(getX()+1, getY());
         }
         else {
             if(xonscreen+width>gameFrame.getX()+gameFrame.getWidth()*4/5 &&
-              getX()+getWidth()-vel>gameFrame.getWidth())
-                setLocation(getX()-vel, getY());
+              getX()+getWidth()-1>gameFrame.getWidth())
+                setLocation(getX()-1, getY());
         }
     }
 }

@@ -3,6 +3,7 @@ package Project3_220;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.concurrent.CyclicBarrier;
 import javax.swing.border.LineBorder;
 import javax.swing.event.*;
 
@@ -10,39 +11,41 @@ public class GameFrame extends MyFrame{
     private static final Color c1 = new Color(19, 43, 48);
     private static final Color c2 = new Color(109, 139, 116);
     private static final Color c3 = new Color(239, 234, 216);
-    
-    //Background
-    private JPanel   BgPanel;
-    private JLabel[] Background;
-    
-    //Components
-    private JPanel          PregamePanel;
+
+    private JPanel    PregamePanel;
+    private JPanel    BgPanel;
+    private JLabel[]   Background;
     
     //Data before start game
     private String UserName;
-    private int DiffIndex = 0;
+    private int Level = 0;
     private int wavelength = 5;
     
-    private GamePanel gamepanel;
-    private Player player;
-    private boolean playing=false;
+    private GamePanel gamePanel;
+    private Player    player;
+    //private boolean   playing=false;
+    private SettingButton   Setting;
+    private UIPanel         uiPanel;
+    private boolean         gameStart=false;
+    private EnemySpawnThread Spawn;
 
-    public GameFrame(UpdateFrameThread UPS, int frameWidth, int frameHeight ,MainApplication Menuframe){
+    public GameFrame(UpdateFrameThread UPS, int frameWidth, int frameHeight ,MainApplication Menuframe,SettingButton Setting){
         super("Penguin Edgerunner Gameplay");
         this.UPS = UPS;
         width  = frameWidth;
         height = frameHeight;
         this.MainFrame = Menuframe;
+        this.Setting = Setting;
         
         setSize(width,height);
         setLocationRelativeTo(null);
-        setDefaultCloseOperation( WindowConstants.EXIT_ON_CLOSE );
+        setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE );
         setMinimumSize(new Dimension(640,360));
         gameFrame = this;
         
         ContentPane = new JLayeredPane();
         setContentPane(ContentPane);
-        setBackground(new Color(42,28,43));
+//        setBackground(new Color(42,28,43));
         ContentPane.setLayout(null);
         ContentPane.setBounds(0, 0, width, height);
         
@@ -58,6 +61,9 @@ public class GameFrame extends MyFrame{
         JToggleButton[]  DifficultyButton;
         JComboBox        Wave;
         MyButton         BackButton,PlayButton;
+
+        BgPanel = new JPanel();
+        PregamePanel = new JPanel();
         
         Text = new JLabel("Enter Your Name");
         Text.setBounds(290, 110, 700, 90);
@@ -113,7 +119,7 @@ public class GameFrame extends MyFrame{
         }
         for(int i=0; i<Difficulty.length; i++) {
             int finalI = i;
-            DifficultyButton[i].addItemListener((ItemEvent e) -> {DiffIndex = finalI;});
+            DifficultyButton[i].addItemListener((ItemEvent e) -> {Level = finalI;});
         }
         JLabel TextLast = new JLabel("Last Wave : ");
         TextLast.setFont(new Font("SansSerif",Font.BOLD,30));
@@ -146,6 +152,8 @@ public class GameFrame extends MyFrame{
             }
         });
 
+        Setting.setGamePanel(ContentPane);//move to line 46
+
         PlayButton = new MyButton(){
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -153,6 +161,7 @@ public class GameFrame extends MyFrame{
                     if(nameTextField.getText().length()>10) UserName = nameTextField.getText().substring(0, 10);
                     else UserName = nameTextField.getText();
                     setSelected(Entered = false);
+                    gameFrame.ContentPane.remove(PregamePanel);
                     Loading();
                 }
             }
@@ -193,9 +202,6 @@ public class GameFrame extends MyFrame{
             Background[i].setBounds(0,0,1280,720);
         }
         
-        BgPanel = new JPanel();
-        PregamePanel = new JPanel();
-        
         BgPanel.setBounds(0, 0, width, height);
         BgPanel.setLayout(null);
         PregamePanel.setBounds(0, 0, width, height);
@@ -209,12 +215,13 @@ public class GameFrame extends MyFrame{
         PregamePanel.add(PlayButton);
         for(JLabel i : Background) BgPanel.add(i);
         
-        ContentPane.add(PregamePanel,JLayeredPane.DRAG_LAYER);
+        ContentPane.add(PregamePanel,JLayeredPane.PALETTE_LAYER);
         ContentPane.add(BgPanel,JLayeredPane.DEFAULT_LAYER);
     }
     
     private void Loading(){
-        ContentPane.remove(PregamePanel);
+//        ContentPane.remove(PregamePanel);//after click 'PLAY', it dont show "Loading..."
+        CyclicBarrier barrier = new CyclicBarrier(2);
         class Load extends Thread{
             private boolean finish = false;
             private JLabel loading = new JLabel();
@@ -235,33 +242,64 @@ public class GameFrame extends MyFrame{
                         default -> "Loading...";
                     };
                     loading.setText(text);
-                    try { Thread.sleep(600); } catch (InterruptedException ex) {}
+                    try { if(!finish) Thread.sleep(600); } catch (InterruptedException ex) {}
                 }
+
+                loading.setText("Start!");
+                loading.setBounds(0, (height-300)/2, 1280, 300);
+                loading.setFont(new Font("SansSerif",Font.ITALIC,130));
+                loading.setForeground(new Color(250, 250, 250,0));
+                loading.setBackground(new Color(237, 9, 9));
+                try { Thread.sleep(700); } catch (InterruptedException ex) {}
+
                 ContentPane.remove(loading);
+                try { barrier.await(); } catch (Exception e) { }
             }
             public void finish(){
                 finish=true;
-                interrupt();
+                if(this.getState()==State.TIMED_WAITING) interrupt();
             }
         }
         Load ShowText = new Load();
         ShowText.start();
-        
-        gamepanel = new GamePanel(gameFrame);
-        player = new Player(gameFrame,gamepanel);
+
+        gamePanel = new GamePanel(gameFrame);
+        player = new Player(gameFrame,gamePanel);
+        uiPanel = new UIPanel(width,height,ContentPane,gameFrame,Setting,MainFrame,UPS);
+            //dont forget to kill 'EnemySpawnThread' correctly
+        Spawn = new EnemySpawnThread(gamePanel,player,Level,wavelength);
 
         ShowText.finish();
-        gamepanel.add(player,JLayeredPane.DRAG_LAYER);
-        ContentPane.add(gamepanel, JLayeredPane.MODAL_LAYER);
+        gamePanel.add(player,JLayeredPane.DRAG_LAYER);
+        ContentPane.add(gamePanel, JLayeredPane.MODAL_LAYER);
+        Setting.setUIPanel(uiPanel.getPausePanel());
+        Setting.SettingConfig(true);
+
+        Spawn.start();
+        //UPS.setGameOn(true);
+
+        gameStart = true;
+        //playing = true;
+
+        if(ContentPane.getLayer(gamePanel)<=ContentPane.getLayer(BgPanel)){
+            ContentPane.setLayer(gamePanel,JLayeredPane.MODAL_LAYER);
+            ContentPane.setLayer(BgPanel,  JLayeredPane.DEFAULT_LAYER);
+            System.out.println("reset the layer");
+        }
+        try {
+            barrier.await();
+        } catch (Exception e) { }
         player.setFocusable(true);
         player.requestFocus();
         player.addKeyListener(player);
-        playing = true;
     }
     @Override
     public void Update(int num){
-        if(playing) {
+        if(gameStart) {
             player.updateAni(num);
+            //player.UpdateLocation(num);
+            Spawn.UpdateAllEnemy(num);
+//            Spawn.UpdateAllProjectileLocation(num);
         }
     }
 }

@@ -5,15 +5,50 @@ import java.awt.event.MouseEvent;
 import javax.swing.*;
 
 public class SettingButton extends MyButton{
+    private boolean isIngame = false;
+    private GameFrame gameFrame;
+    private JLayeredPane GamePanel;//ContentPane of 'GameFrame' frame
+    private JPanel PausePanel;
+
+    //Temp Reference;
+    private MainApplication TFrame;
+    private JLayeredPane TContent;
+    private JPanel TMenuPanel;
+
+    private MyButton BackButton;
+    private SettingButton Setting;
+
+    public void SettingConfig(boolean BOOL){
+        isIngame = BOOL;
+        if(isIngame){
+            this.ContentPane = GamePanel;
+            this.MenuPanel = PausePanel;
+            BackButton.setPanel(Frame, ContentPane, MenuPanel, OwnPanel);
+        }else{
+            this.ContentPane = TContent;
+            this.MenuPanel = TMenuPanel;
+            BackButton.setPanel(Frame, ContentPane, MenuPanel, OwnPanel);
+        }
+    }
+
+    public void setUIPanel(JPanel PausePanel){
+        this.PausePanel = PausePanel;
+    }
+    public void setGamePanel(JLayeredPane GamePanel){
+        this.GamePanel = GamePanel;
+    }
+
     public SettingButton(MainApplication Frame, JLayeredPane Content, JPanel MenuPanel){
         /*
         didnt do Audio things
         */
-        this.Frame = Frame;
-        this.ContentPane = Content;
-        this.MenuPanel = MenuPanel;
+        this.Frame = TFrame = Frame;
+        this.ContentPane = TContent = Content;
+        this.MenuPanel = TMenuPanel = MenuPanel;
         set3Icon(BTPath + "SettingButton.png");
         OwnPanel = new JPanel();
+
+        Setting = this;//CurrentButton=this;
         
         String[] path = {"SettingText.PNG", "SFXText.PNG", "BGMText.PNG"};//(213, 472, 304, 98)
         int[][] bound = {{213,0,304,115},{0,177,220,85},{0,292,220,85}};//set bounds correctly
@@ -77,7 +112,7 @@ public class SettingButton extends MyButton{
         BGMButton.addMouseListener(BGMButton);
         
         
-        MyButton BackButton = new MyButton(){
+        BackButton = new MyButton(){
             @Override
             public void setPanel(MainApplication Frame, JLayeredPane Content, JPanel MenuPanel, JPanel OwnPanel){
                 this.Frame = Frame;
@@ -95,11 +130,11 @@ public class SettingButton extends MyButton{
                     setSelected(Entered = false);
                     ContentPane.remove(OwnPanel);
                     ContentPane.add(MenuPanel, JLayeredPane.DRAG_LAYER);
-                    Frame.repaint();
+                    if(isIngame==false)Frame.repaint();
                 }
             }
         };
-        BackButton.setPanel(Frame, Content, MenuPanel, OwnPanel);
+        BackButton.setPanel(Frame, ContentPane, MenuPanel, OwnPanel);
         BackButton.addMouseListener(BackButton);
         
         OwnPanel.setLayout(null);
