@@ -19,7 +19,8 @@ public class Player extends Creature implements KeyListener{
     private static final int Death=7;
 
     private boolean pressA=false, pressD=false, roll=false;
-    private int MP;
+    private int MaxMP, MP, score=0;
+    private Thread regenMP;
 
     public Player(GameFrame gameFrame,GamePanel gamePanel){
         this.gameFrame = gameFrame;
@@ -28,10 +29,10 @@ public class Player extends Creature implements KeyListener{
         width =  height*120/80;
         setMaxHP(1000);
         setHP(1000);
-        velocity=1;
+        velocity = 2;
         lastAtk = 2; maxAtk = 3;
         actionindex = Idle;
-//        MP=800;
+        MaxMP = MP = 800;
 
         importImages();
 
@@ -50,28 +51,27 @@ public class Player extends Creature implements KeyListener{
                 for (int j = 0; j < fullpic.getWidth()/120; j++)
                     Animation[i][j] = Path.resizeBuffer(fullpic.getSubimage(j*120,0,120,80),width,height);
 
-                if(i==Hit) Animation[i][1] =Animation[i][2] =Animation[i][3] =Animation[i][0];
+                if(i==Hit)
+                    for (int j = 1; j < 8; j++)
+                        Animation[i][j] =Animation[i][0];
             } catch (IOException e) { }
         }
     }
 
     public void updateAni(int update){
-        if(update%20==0){
-            int maxindex = switch (actionindex) {
-                case Attack, Hit -> 4;
-                case Attack + 1 -> 6;
-                case Attack + 2, Death, Idle, Run -> 10;
-                case Roll -> 12;
-                default -> 1;
-            };
+        if(update%30==0){
+            int maxindex = getMaxFrameIndex();
             frameindex = ++frameindex % maxindex;
             if(!facingLeft) setIcon(new ImageIcon(Animation[actionindex][frameindex]));
             else setIcon(new ImageIcon(Path.flipH(Animation[actionindex][frameindex])));
 
             if(frameindex == maxindex - 1){
-                if (actionindex == Death) frameindex--;
+                if (actionindex == Death) frameindex--;//exit game
                 else if (actionindex == Hit){
                     hit = false;
+                    if (pressA || pressD) actionindex = Run;
+                    else actionindex = Idle;
+                    frameindex = 0;
                 }
                 else if (actionindex <= Attack + 2) {
                     atk = false;
@@ -91,25 +91,35 @@ public class Player extends Creature implements KeyListener{
     }
     @Override
     public void keyPressed(KeyEvent e) {
-        if(!death&&!hit&&!roll&&!atk) {
-            switch (e.getKeyCode()) {
-                case KeyEvent.VK_A:
-                    pressA = true;
-                    facingLeft = true;
-                    break;
-                case KeyEvent.VK_D:
-                    pressD = true;
-                    facingLeft = false;
-                    break;
-                case KeyEvent.VK_K:
-                    doAtk();
-                    break;
-                case KeyEvent.VK_SPACE:
-                    doRoll();
-                    break;
-            }
-            checkStatus();
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_A:
+                pressA = true;
+                facingLeft = true;
+                break;
+            case KeyEvent.VK_D:
+                pressD = true;
+                facingLeft = false;
+                break;
+            case KeyEvent.VK_K:
+                doAtk();
+                break;
+            case KeyEvent.VK_SPACE:
+                doRoll();
+                break;
         }
+        if (regenMP==null || !regenMP.isAlive()){
+            regenMP = new Thread(){
+                @Override
+                public void run() {
+                    while (MP<MaxMP){
+                        try { Thread.sleep(40); } catch (InterruptedException ex) {}
+                        setMP(2);
+                    }
+                }
+            };
+            regenMP.start();
+        }
+        checkStatus();
     }
     @Override
     public void keyReleased(KeyEvent e) {
@@ -125,14 +135,14 @@ public class Player extends Creature implements KeyListener{
         }
         checkStatus();
     }
-    @Override
-    public void checkStatus() {//private void setStatus()
+    public void checkStatus() {
         if(death) {
             if (actionindex!=Death) frameindex=0;
             actionindex = Death;
         }
         else{
             if(hit) {
+                if (actionindex!=Hit) frameindex=0;
                 actionindex = Hit;
                 atk=false;
             }
@@ -166,57 +176,92 @@ public class Player extends Creature implements KeyListener{
 
         gamePanel.setlocation(getLocationOnScreen().x,width,facingLeft);
     }
-
     private void doAtk(){
-        if(!hit&&!death&&!roll&&!atk){
+        if(!hit&&!death&&!roll&&!atk&&MP>=60){
             atk=true;
             lastAtk = ++lastAtk%maxAtk;
             actionindex=lastAtk;
             frameindex=0;
+            setMP(-60);
         }
     }
     private void doRoll(){
-        if(!hit&&!death&&!roll){
+        if(!hit&&!death&&!roll&&MP>=120){
             roll=true;
             frameindex=0;
+            setMP(-120);
         }
     }
-    @Override
-    public void keyTyped(KeyEvent e) { }
-    //override
     @Override
     public void setHP(int hp){
         super.setHP(hp);
         //set the HP bar
     }
+    private int getMaxFrameIndex(){
+        return switch (actionindex) {
+            case Attack -> 4;
+            case Attack + 1 -> 6;
+            case Hit -> 8;
+            case Attack + 2, Death, Idle, Run -> 10;
+            case Roll -> 12;
+            default -> 1;
+        };
+    }
+    private void setMP(int usedMP){
+        if(MP+usedMP>MaxMP) MP=MaxMP;
+        else if (MP+usedMP<0) MP=0;
+        else {
+            MP += usedMP;
+        }
+        //set MP bar
+    }
 
     //Working with Enemy
+    public void gotScore(int score){ this.score += score; }
+    public void gotHeal(int heal){
+        setHP(getHP()+heal);
+    }
+    public void isHitting(Goblin goblin){
+        if(atk){
+            Rectangle gb = goblin.getBounds();
+            Rectangle goblinHitBox = new Rectangle(gb.x+gb.width*60/150,gb.y, gb.width*30/150,gb.height);
+            Rectangle playAttackRange = new Rectangle(getX()+4,getY(), width/3,height);
+            if(!facingLeft) playAttackRange.setLocation(getX()+width*3/5, getY());
+            if(playAttackRange.intersects(goblinHitBox) &&
+                    ((actionindex<Attack+2&&(frameindex==2||frameindex==1)) ||
+                            (actionindex==Attack+2&&(frameindex==1||frameindex==2||frameindex==6||frameindex==7)))){
+                goblin.gotAttacked(new Random().nextInt(90,125));
+                if(actionindex == Attack+2) goblin.gotAttacked(new Random().nextInt(100,140));
+            }
+        }
+    }
     public Rectangle getHitBox(){
         Rectangle t = getBounds();
-        return new Rectangle(t.x+45*42/8, t.y,  30*42/8, t.height);
+        return new Rectangle(t.x+45*42/8, t.y,  t.width/4, t.height);
     }
     public boolean canBeAttacked(int x, int width){
-        x = x+width*2/5;
-        int px = getLocationOnScreen().x+this.width*3/8;
-        int hitBoxWidth = this.width/4;
-        return x==px || (x>px && x-px+hitBoxWidth<=width/10) || (x<px && px-x+width/5<=width/10);
+        x = x+width*45/150;
+        int px = getLocationOnScreen().x+this.width*45/120;
+        return x==px || (x>px && x-px<=this.width*30/120) || (x<px && px-x<=width*60/150);
     }
     public boolean isOnTheLeft(int x){
-        return getLocationOnScreen().x<x;
+        return getLocationOnScreen().x+this.width/2 < x;
     }
     public void gotAttacked(int damage){
         int hp = getHP()-damage;
-        if(hp<=0){
-            death = true;
-            hp = 0;
-        }
+        if (roll) hp += damage;
         else {
-            hit = true;
-            frameindex = 0;
+            if(hp<=0){
+                death = true;
+                hp = 0;
+            }
+            else hit = true;
+            setHP(hp);
         }
-        setHP(hp);
-        System.out.println(hp);
 
         checkStatus();
     }
+
+    @Override
+    public void keyTyped(KeyEvent e) { }
 }

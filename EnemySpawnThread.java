@@ -7,23 +7,16 @@ import java.util.*;
 public class EnemySpawnThread extends Thread{
     private boolean gameStart = true;
     private GamePanel gamepanel;
-//    private GameFrame gameFrame;
-//    private Player player;
     private int Level;
     private int Wave;
-
-    private ArrayList<Creature> EnemyList;
-//    private ArrayList<Projectile> ProjectileList;
+    private ArrayList<Goblin> EnemyList;
 
     public EnemySpawnThread(GamePanel gamepanel, Player player, int Level, int Wave){//GameFrame gameFrame,
-//        this.gameFrame = gameFrame;
         this.gamepanel = gamepanel;
-//        this.player = player;
         this.Level = Level;
         this.Wave = Wave;
         EnemyList = new ArrayList<>();
-//        ProjectileList = new ArrayList<>();
-        Goblin.LoadResource(player, Level);
+        Goblin.LoadResource(player, EnemyList, Level);
     }
     public void run(){
         /*while (gameStart){
@@ -33,33 +26,31 @@ public class EnemySpawnThread extends Thread{
             }catch (InterruptedException e){e.printStackTrace();}
         }*/
         boolean clearWave = true;
-        int ene=0;
-        for(int i=0, enemyNum=new Random().nextInt(2,(int) Math.ceil(Level/2.0)+5);  i<Wave && gameStart;  i++){
+        for(int i=0, enemyNum=(int) Math.ceil(Level/2.0)+2;  i<Wave && gameStart;  i++){
+//            if (clearWave) System.out.printf("Wave: %d | Enemy: %d\n", (i+1), enemyNum);
             for(int j=0; j<enemyNum && gameStart && clearWave; j++){
                 try {
-                    Thread.sleep(new Random().nextInt(1000,5000));
+                    Thread.sleep(new Random().nextInt(1500,3500));
                 }catch (InterruptedException e){e.printStackTrace();}
                 finally {
                     enemySpawn();
-                    System.out.println(++ene);
                 }
             }
 
             if(EnemyList.size()==0){
                 clearWave=true;
+                enemyNum += (1+Level);
             }else {
                 clearWave=false;
                 i--;
             }
-            enemyNum += new Random().nextInt(1,3+Level);
         }
+        //if(gameStart) game Summary
     }
     public void enemySpawn(){
-        Creature temp = Goblin.createGoblin(new Random().nextInt(0,1280*2));
-//        if(new Random().nextBoolean()) EnemyList.add(Goblin.createGoblin(new Random().nextInt(0,1280*2)));
-//        else EnemyList.add(Skeleton.createSkeleton(new Random().nextInt(0,1280*2)));
+        Goblin temp = Goblin.createGoblin(new Random().nextInt(640,1132));
 
-        gamepanel.add(temp,JLayeredPane.DRAG_LAYER);//new Random().nextInt(3,5)*100
+        gamepanel.add(temp,new Random().nextInt(3,5)*100);
         EnemyList.add(temp);
     }
     /*public void enemySpawn(){
@@ -72,7 +63,7 @@ public class EnemySpawnThread extends Thread{
         enemyRef.setOpaque(true);//move to its constructor
         gamepanel.add(enemyRef,JLayeredPane.MODAL_LAYER);
         gamepanel.validate();
-    }*/
+    }
     public void UpdateAllEnemy(int num){
         for(int i = 0 ; i < EnemyList.size() ; i++) {
             if(num%20==0) EnemyList.get(i).checkStatus();
@@ -81,9 +72,9 @@ public class EnemySpawnThread extends Thread{
             //doDamage
             //gotDamage
         }
-//        if(num%3==0) for(int i = 0 ; i < EnemyList.size() ; i++) EnemyList.get(i).Walking();
+        if(num%3==0) for(int i = 0 ; i < EnemyList.size() ; i++) EnemyList.get(i).Walking();
     }
-    /*public void UpdateAllProjectileLocation(int num){
+    public void UpdateAllProjectileLocation(int num){
         if(num%3==0) for (int i = 0 ; i < ProjectileList.size() ; i++) ProjectileList.get(i).UpdateLocation();
     }*/
 }

@@ -13,16 +13,19 @@ public abstract class Creature extends JLabel implements Path {
 
     protected BufferedImage[][] Animation;
     protected boolean facingLeft = false, walking = false, spawning = true;
-    protected boolean atk=false,    hit=false,    death=false,  doDamage=false;
+    protected boolean atk=false,    hit=false,    death=false;
 
     protected void setMaxHP(int maxHP)  { MaxHP = maxHP; }
-    protected void setHP(int hp)           { HP = hp; }//set the hp bar
+    protected void setHP(int hp){
+        if(hp<MaxHP) HP = hp;
+        else HP = MaxHP;
+    }
     protected int getHP()               { return HP; }
 
     //Enemy method
-    public abstract void checkStatus();
-    public void doWalk(int update){}
-    public abstract void doWalk();
-    public abstract void updateAni(int update);
+//    public abstract void checkStatus();
+//    public void doWalk(int update){}
+//    public abstract void doWalk();
+//    public abstract void updateAni(int update);
 
 }

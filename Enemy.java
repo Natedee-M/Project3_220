@@ -69,17 +69,4 @@ class Enemy extends Creature{
     public Player getPlayer(){
         return player;
     }
-
-    @Override
-    public void doWalk() {
-
-    }
-    @Override
-    public void updateAni(int update) {
-
-    }
-    @Override
-    public void checkStatus() {
-
-    }
 }

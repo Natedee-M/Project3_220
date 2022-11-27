@@ -1,16 +1,17 @@
 package Project3_220;
 
 import static java.lang.Math.pow;
-import javax.swing.JFrame;
 
 public class UpdateFrameThread extends Thread{
     private final int FPS = 120;
-    private final int UPS = 300;
+    protected final int UPS = 600;
     private MyFrame frame;
     private boolean GameOn = true;
+    protected static boolean gamePause = false;
     
     public void setFrame(MyFrame frame)      { this.frame = frame; }
     public void setGameOn(boolean b)        { GameOn = b; }
+    public static void setGamePause(boolean b){ gamePause=b; }
     
     public void run(){
         double TimePerFrame = pow(10,9)*1.0/FPS;
@@ -28,7 +29,7 @@ public class UpdateFrameThread extends Thread{
             deltaF += (currentTime - previoustime)/TimePerFrame;
             previoustime = currentTime;
             if(deltaU >= 1){
-                frame.Update(++update);
+                if (!gamePause) frame.Update(++update);
                 deltaU--;
             }
             if(deltaF >= 1) {

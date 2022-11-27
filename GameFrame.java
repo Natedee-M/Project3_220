@@ -265,12 +265,12 @@ public class GameFrame extends MyFrame{
 
         gamePanel = new GamePanel(gameFrame);
         player = new Player(gameFrame,gamePanel);
-        uiPanel = new UIPanel(width,height,ContentPane,gameFrame,Setting,MainFrame,UPS);
+        uiPanel = new UIPanel(player,width,height,ContentPane,gameFrame,Setting,MainFrame,UPS);
             //dont forget to kill 'EnemySpawnThread' correctly
         Spawn = new EnemySpawnThread(gamePanel,player,Level,wavelength);
 
         ShowText.finish();
-        gamePanel.add(player,JLayeredPane.DRAG_LAYER);
+        gamePanel.add(player,JLayeredPane.POPUP_LAYER);
         ContentPane.add(gamePanel, JLayeredPane.MODAL_LAYER);
         Setting.setUIPanel(uiPanel.getPausePanel());
         Setting.SettingConfig(true);
@@ -297,9 +297,6 @@ public class GameFrame extends MyFrame{
     public void Update(int num){
         if(gameStart) {
             player.updateAni(num);
-            //player.UpdateLocation(num);
-            Spawn.UpdateAllEnemy(num);
-//            Spawn.UpdateAllProjectileLocation(num);
         }
     }
 }

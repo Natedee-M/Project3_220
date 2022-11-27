@@ -9,7 +9,7 @@ public class UIPanel extends JPanel implements Path {
     private int HP ,CurrentHP;
     private int MP ,CurrentMP;
     private int Skill_CD;
-    //private Player player;
+    private Player player;
     private JPanel HPBar,MPBar,CHPBar,CMPBar;
     
     //Panel Data
@@ -31,10 +31,10 @@ public class UIPanel extends JPanel implements Path {
     private boolean isPause = false;
     
     
-    public UIPanel(/*Player Object Ex. Player player*/int Width,int Height,
+    public UIPanel(/*Player Object Ex. */Player player, int Width,int Height,
             JLayeredPane ContentPane,MyFrame GameFrame,SettingButton Setting,
             MainApplication MainFrame,UpdateFrameThread UPS){
-        //this.Player = player
+        this.player = player;
         this.width = Width;
         this.height = Height;
         contentPane = ContentPane;
@@ -125,6 +125,8 @@ public class UIPanel extends JPanel implements Path {
                     PauseComponent();
                     UIPanel.setVisible(false);
                     isPause = true;
+                    UpdateFrameThread.setGamePause(true);
+                    player.removeKeyListener(player);
                 }
             }
 //            public void mouseEntered(MouseEvent e) { this.setSelected(Entered = true); }
@@ -176,6 +178,9 @@ public class UIPanel extends JPanel implements Path {
                     contentPane.remove(PausePanel);
                     UIPanel.setVisible(true);
                     isPause = false;
+                    UpdateFrameThread.setGamePause(false);
+                    player.requestFocus();
+                    player.addKeyListener(player);
                     //GamethreadPause
                 }
             }

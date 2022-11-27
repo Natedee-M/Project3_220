@@ -2,6 +2,7 @@ package Project3_220;
 
 import java.awt.Image;
 import java.awt.event.MouseEvent;
+import javax.sound.sampled.Clip;
 import javax.swing.*;
 
 public class SettingButton extends MyButton{
@@ -17,6 +18,8 @@ public class SettingButton extends MyButton{
 
     private MyButton BackButton;
     private SettingButton Setting;
+
+    private Clip bgmSound;
 
     public void SettingConfig(boolean BOOL){
         isIngame = BOOL;

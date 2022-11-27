@@ -138,7 +138,7 @@ public final class MainApplication extends MyFrame{
     }
     
     @Override
-    public void Update(int num) { if(num%20==0) Logo.update(); }
+    public void Update(int num) { if(num%40==0) Logo.update(); }
     public void refresh(){//for what?
         MenuPanel.removeAll();
         MenuPanel.add(Logo);
